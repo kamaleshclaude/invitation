@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Exact Color Palette */
+  --cream: #FFF5E8;
+  --beige: #F0E1CE;
+  --chocolate: #594337;
+  --gold: #E9B95B;
+  --rose: #E9B8B0;
+  --peach: #F6C9A8;
+  --white: #FFFFFF;
+  --muted-brown: #927B6C;
+
+  /* Claymorphic Shadows */
+  --clay-shadow:
+    8px 8px 20px rgba(89, 67, 55, 0.10),
+    -8px -8px 20px rgba(255, 255, 255, 0.85);
+
+  --clay-shadow-hover:
+    12px 12px 26px rgba(89, 67, 55, 0.13),
+    -10px -10px 24px rgba(255, 255, 255, 0.90);
+
+  --clay-shadow-card:
+    10px 10px 24px rgba(89, 67, 55, 0.10),
+    -10px -10px 24px rgba(255, 255, 255, 0.90);
+
+  --clay-shadow-button:
+    6px 6px 14px rgba(89, 67, 55, 0.12),
+    -5px -5px 12px rgba(255, 255, 255, 0.85);
+
+  --clay-inset:
+    inset 4px 4px 9px rgba(89, 67, 55, 0.08),
+    inset -4px -4px 9px rgba(255, 255, 255, 0.75);
+
+  --clay-inset-focus:
+    inset 4px 4px 10px rgba(89, 67, 55, 0.12),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.90),
+    0 0 0 3px rgba(233, 185, 91, 0.45);
+
+  --radius-card: 28px;
+  --radius-button: 18px;
+  --radius-input: 16px;
+
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--chocolate);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Clay Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F0E1CE;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E9B95B;
+  border-radius: 999px;
+  border: 2px solid #F0E1CE;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D99F37;
+}
+
+/* Clay Cards */
+.clay-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-card);
+  box-shadow: var(--clay-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.clay-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--clay-shadow-hover);
+}
+
+.clay-surface-beige {
+  background: #F0E1CE;
+  border-radius: var(--radius-card);
+  box-shadow:
+    6px 6px 16px rgba(89, 67, 55, 0.08),
+    -6px -6px 16px rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.clay-surface-cream {
+  background: #FFF5E8;
+  border-radius: var(--radius-card);
+  box-shadow: var(--clay-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.clay-surface-rose {
+  background: #E9B8B0;
+  border-radius: var(--radius-card);
+  box-shadow:
+    8px 8px 20px rgba(138, 92, 85, 0.15),
+    -6px -6px 16px rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.clay-surface-peach {
+  background: #F6C9A8;
+  border-radius: var(--radius-card);
+  box-shadow:
+    8px 8px 20px rgba(142, 98, 66, 0.12),
+    -6px -6px 16px rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Clay Buttons */
+.clay-button {
+  background: #FFFFFF;
+  color: var(--chocolate);
+  border-radius: var(--radius-button);
+  box-shadow: var(--clay-shadow-button);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.clay-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--clay-shadow-hover);
+}
+
+.clay-button:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: inset 3px 3px 6px rgba(89, 67, 55, 0.14), inset -2px -2px 6px rgba(255, 255, 255, 0.6);
+}
+
+.clay-button-gold {
+  background: linear-gradient(135deg, #F2CE85 0%, #E9B95B 100%);
+  color: #413027;
+  border-radius: var(--radius-button);
+  box-shadow:
+    6px 6px 16px rgba(184, 131, 35, 0.25),
+    -4px -4px 12px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  font-weight: 800;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.clay-button-gold:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    8px 8px 22px rgba(184, 131, 35, 0.32),
+    -5px -5px 16px rgba(255, 255, 255, 0.95);
+}
+
+.clay-button-gold:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: inset 3px 3px 7px rgba(120, 80, 18, 0.28), inset -2px -2px 5px rgba(255, 255, 255, 0.6);
+}
+
+.clay-button-chocolate {
+  background: #594337;
+  color: #FFFFFF;
+  border-radius: var(--radius-button);
+  box-shadow:
+    6px 6px 16px rgba(89, 67, 55, 0.25),
+    -4px -4px 12px rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 700;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.clay-button-chocolate:hover {
+  background: #4A372E;
+  transform: translateY(-2px);
+  box-shadow:
+    8px 8px 20px rgba(89, 67, 55, 0.3),
+    -5px -5px 14px rgba(255, 255, 255, 0.8);
+}
+
+.clay-button-chocolate:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+/* Clay Inputs */
+.clay-input {
+  background: #FFFDF9;
+  border-radius: var(--radius-input);
+  box-shadow: var(--clay-inset);
+  border: 1px solid rgba(89, 67, 55, 0.08);
+  color: var(--chocolate);
+  outline: none;
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.clay-input:focus {
+  box-shadow: var(--clay-inset-focus);
+  border-color: #E9B95B;
+}
+
+.clay-input::placeholder {
+  color: #927B6C;
+  opacity: 0.7;
+}
+
+/* Clay Badge / Pill */
+.clay-pill {
+  border-radius: 9999px;
+  box-shadow:
+    3px 3px 8px rgba(89, 67, 55, 0.08),
+    -3px -3px 8px rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Polaroid Card */
+.clay-polaroid {
+  background: #FFFFFF;
+  padding: 14px 14px 20px 14px;
+  border-radius: 18px;
+  box-shadow:
+    8px 8px 22px rgba(89, 67, 55, 0.12),
+    -6px -6px 18px rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 260ms ease;
+}
+
+.clay-polaroid:hover {
+  transform: translateY(-8px) rotate(0deg) scale(1.02) !important;
+  box-shadow:
+    14px 16px 32px rgba(89, 67, 55, 0.18),
+    -10px -10px 24px rgba(255, 255, 255, 0.95);
+  z-index: 10;
+}
+
+/* Heart cursor trail canvas */
+#cursor-canvas {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+}
+
+/* 3D Depth Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
