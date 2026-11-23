@@ -1,0 +1,63 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Always disable caching for real-time live statistics
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const MAX_CAPACITY = 60;
+
+  try {
+    if (supabase) {
+      // Query database count of registered attendees
+      const { count, error } = await supabase
+        .from('registrations')
+        .select('id', { count: 'exact' })
+        .limit(1);
+
+      if (error) {
+        console.error('Database count query error:', error);
+        return res.status(500).json({ 
+          error: 'Failed to fetch registration count from database',
+          details: error.message 
+        });
+      }
+
+      const totalRegistered = count || 0;
+      const availableSlots = Math.max(0, MAX_CAPACITY - totalRegistered);
+      const isCapacityFull = totalRegistered >= MAX_CAPACITY;
+
+      return res.status(200).json({
+        totalRegistered,
+        availableSlots,
+        capacity: MAX_CAPACITY,
+        isCapacityFull,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Fallback if database env is not provided yet
+    return res.status(200).json({
+      totalRegistered: 0,
+      availableSlots: MAX_CAPACITY,
+      capacity: MAX_CAPACITY,
+      isCapacityFull: false,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (err: any) {
+    console.error('Stats endpoint error:', err);
+    return res.status(500).json({ error: 'Internal server error', message: err?.message });
+  }
+}

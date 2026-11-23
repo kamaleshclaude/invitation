@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import type { 
   Registration, 
   FoodPreference, 
@@ -112,6 +112,33 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   });
 
+  const [serverCount, setServerCount] = useState<number | null>(null);
+
+  // Fetch real database statistics from Vercel serverless API
+  const fetchLiveStats = useCallback(async () => {
+    try {
+      const res = await fetch('/api/stats', { 
+        cache: 'no-store',
+        headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.totalRegistered === 'number') {
+          setServerCount(data.totalRegistered);
+        }
+      }
+    } catch {
+      // ignore in offline mode
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveStats();
+    // Poll every 20 seconds for live production updates
+    const interval = setInterval(fetchLiveStats, 20000);
+    return () => clearInterval(interval);
+  }, [fetchLiveStats]);
+
   // Cross-tab broadcast channel for local sync
   useEffect(() => {
     let bc: BroadcastChannel | null = null;
@@ -119,6 +146,7 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       bc = new BroadcastChannel('star_matric_channel');
       bc.onmessage = (event) => {
         if (event.data?.type === 'SYNC') {
+          fetchLiveStats();
           const fresh = getLocalStorageData();
           setRegistrations(fresh.registrations);
           setFoodPreferences(fresh.foodPreferences);
@@ -138,7 +166,7 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return () => {
       bc?.close();
     };
-  }, []);
+  }, [fetchLiveStats]);
 
   const broadcastSync = () => {
     try {
@@ -208,7 +236,9 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   // Derived Stats
   const stats = useMemo(() => {
-    const totalRegistrations = registrations.length;
+    const rawCount = registrations.length;
+    // Always prioritize fresh production database count from Vercel API
+    const totalRegistrations = serverCount !== null ? serverCount : rawCount;
     const maxCapacity = REUNION_CONFIG.maxStudentCapacity || 60;
     const spotsRemaining = Math.max(0, maxCapacity - totalRegistrations);
     const isCapacityFull = totalRegistrations >= maxCapacity;
@@ -270,7 +300,7 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       totalDateVotes,
       totalCardsGenerated
     };
-  }, [registrations, foodPreferences, venueVotes, dateVotes, generatedCards]);
+  }, [serverCount, registrations, foodPreferences, venueVotes, dateVotes, generatedCards]);
 
   // Check if user voted in a specific poll
   const hasUserVoted = (pollKey: string): boolean => {
@@ -294,16 +324,54 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
-  // 1. Add Registration (STRICT 60-STUDENT LIMIT ENFORCED)
+  // 1. Add Registration (STRICT 60-STUDENT LIMIT ENFORCED ON SERVER & DB)
   const addRegistration = async (regData: Omit<Registration, 'id' | 'created_at'>) => {
     const maxLimit = REUNION_CONFIG.maxStudentCapacity || 60;
-    if (registrations.length >= maxLimit) {
+    const currentTotal = serverCount !== null ? serverCount : registrations.length;
+    if (currentTotal >= maxLimit) {
       return { 
         success: false, 
         error: `Registration is full! We have reached our maximum capacity of ${maxLimit} students. Please reach out to the reunion committee.` 
       };
     }
 
+    // Attempt 1: Call production Vercel serverless API
+    try {
+      const apiRes = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        body: JSON.stringify(regData)
+      });
+
+      if (apiRes.ok) {
+        const apiData = await apiRes.json();
+        if (apiData.success && apiData.data) {
+          const savedReg = apiData.data as Registration;
+          if (apiData.stats?.totalRegistered !== undefined) {
+            setServerCount(apiData.stats.totalRegistered);
+          }
+          const updated = [savedReg, ...registrations.filter(r => r.id !== savedReg.id && r.phone !== savedReg.phone)];
+          setRegistrations(updated);
+          setLocalStorageItem('registrations', updated);
+          setCurrentRegistrant(savedReg);
+          broadcastSync();
+          fetchLiveStats();
+          return { success: true, data: savedReg };
+        }
+      } else {
+        const errJson = await apiRes.json().catch(() => null);
+        if (errJson?.error) {
+          return { success: false, error: errJson.error };
+        }
+      }
+    } catch {
+      // offline or pure client-side fallback
+    }
+
+    // Attempt 2: Direct Supabase / local storage fallback
     const cleanPhone = regData.phone.replace(/\D/g, '');
     const exists = registrations.some(r => r.phone.replace(/\D/g, '') === cleanPhone);
     if (exists) {
@@ -313,26 +381,47 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       };
     }
 
-    const newReg: Registration = {
+    let finalReg: Registration = {
       ...regData,
       phone: cleanPhone,
-      id: `reg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `00000000-0000-4000-8000-${Date.now().toString(16).padStart(12, '0')}`,
       created_at: new Date().toISOString()
     };
 
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('registrations').insert([newReg]);
-      if (error) {
-        console.error("Supabase insert error", error);
+      const insertObj: any = {
+        name: regData.name.trim(),
+        phone: cleanPhone,
+        batch: regData.batch || 'XII - A',
+        guests: regData.guests || 0,
+        attendance_status: regData.attendance_status || 'Yes',
+        created_at: new Date().toISOString()
+      };
+      if (regData.email) insertObj.email = regData.email.trim();
+      if (regData.photo_url) insertObj.photo_url = regData.photo_url;
+
+      const { data: inserted, error } = await supabase
+        .from('registrations')
+        .insert([insertObj])
+        .select()
+        .single();
+
+      if (!error && inserted) {
+        finalReg = inserted as Registration;
+      } else if (error) {
+        console.error("Supabase direct insert error:", error);
       }
     }
 
-    const updated = [newReg, ...registrations];
+    const updated = [finalReg, ...registrations];
     setRegistrations(updated);
     setLocalStorageItem('registrations', updated);
-    setCurrentRegistrant(newReg);
+    setCurrentRegistrant(finalReg);
     broadcastSync();
-    return { success: true, data: newReg };
+    fetchLiveStats();
+    return { success: true, data: finalReg };
   };
 
   // Update Registration (Admin)

@@ -169,34 +169,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   // ================= ADMIN LOGIN SCREEN (PHASE 13) =================
   if (!isAuthenticated) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#594337]/50 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#594337]/50 backdrop-blur-sm">
         <motion.div
           initial={{ scale: 0.92, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="max-w-md w-full clay-card p-8 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-6 text-center"
+          className="max-w-md w-full clay-card bg-white border-2 border-[#F0E1CE] p-8 space-y-6 text-center shadow-2xl"
         >
-          <div className="w-16 h-16 rounded-full clay-surface-cream text-[#E9B95B] flex items-center justify-center mx-auto border border-[#F0E1CE]">
-            <ShieldCheck className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-full bg-[#FFF9E6] border border-[#E9B95B] text-[#594337] flex items-center justify-center mx-auto shadow-md">
+            <ShieldCheck className="w-8 h-8 text-[#E9B95B]" />
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-2xl font-black text-[#594337]">
+            <h3 className="text-2xl font-bold text-[#594337]">
               Reunion Organizer Portal
             </h3>
-            <p className="text-xs text-[#927B6C]">
+            <p className="text-xs text-[#8E725B]">
               Authorized administrator dashboard for {REUNION_CONFIG.schoolName}
             </p>
           </div>
 
           {authError && (
-            <div className="p-3 rounded-xl bg-[#E9B8B0]/40 border border-[#E9B8B0] text-[#594337] text-xs font-bold">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 text-xs font-semibold">
               {authError}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
-              <label className="block text-xs uppercase font-extrabold tracking-wider text-[#594337] mb-1.5">
+              <label className="block text-xs uppercase font-bold tracking-wider text-[#594337] mb-1.5">
                 Admin Password / PIN
               </label>
               <input
@@ -206,13 +206,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 placeholder="Enter password (e.g. star2026)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 clay-input text-sm font-semibold"
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#F0E1CE] text-sm font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-[18px] clay-button-gold text-sm font-black text-[#413027] shadow-sm"
+              className="w-full py-3.5 rounded-[20px] bg-[#E9B95B] hover:bg-[#DFAB48] text-sm font-bold text-[#594337] shadow-md transition"
             >
               SIGN IN TO ADMIN CONSOLE
             </button>
@@ -221,7 +221,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           <div className="pt-2">
             <button
               onClick={onClose}
-              className="text-xs text-[#927B6C] hover:text-[#594337] font-bold underline"
+              className="text-xs text-[#8E725B] hover:text-[#594337] font-medium underline"
             >
               &larr; Return to Public Website
             </button>
@@ -233,13 +233,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
   // ================= ADMIN DASHBOARD (PHASE 14) =================
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#FFF5E8] text-[#594337] p-4 sm:p-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#FFF5E8] text-[#594337] warm-grid-bg p-4 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Top Header */}
-        <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="clay-card bg-white/95 border border-[#F0E1CE] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
           <div>
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full clay-pill bg-[#FFF5E8] text-xs font-extrabold text-[#594337] mb-1">
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#FFF9E6] border border-[#E9B95B] text-xs font-bold text-[#594337] mb-1">
               <ShieldCheck className="w-3.5 h-3.5 text-[#E9B95B]" />
               <span>Organizer Administration Console</span>
             </div>
@@ -251,14 +251,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           <div className="flex items-center space-x-2.5">
             <button
               onClick={exportAttendeesCSV}
-              className="px-4 py-2.5 rounded-[16px] clay-button text-xs font-bold text-[#594337] flex items-center space-x-1.5 border border-[#F0E1CE]"
+              className="px-4 py-2.5 rounded-[18px] bg-white border border-[#F0E1CE] hover:bg-[#FFF5E8] text-xs font-semibold text-[#594337] flex items-center space-x-1.5 shadow-sm transition"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
               <span>Export CSV</span>
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2.5 rounded-[16px] clay-button text-xs font-bold text-[#927B6C] hover:text-[#594337] flex items-center space-x-1.5 border border-[#F0E1CE]"
+              className="px-4 py-2.5 rounded-[18px] bg-white border border-[#F0E1CE] hover:bg-[#FFF5E8] text-xs font-semibold text-[#8E725B] hover:text-[#594337] flex items-center space-x-1.5 shadow-sm transition"
             >
               <LogOut className="w-4 h-4" />
               <span>Exit Admin</span>
@@ -266,36 +266,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* METRICS SUMMARY CARDS (With 60-Student Restriction Indicator) */}
+        {/* METRICS SUMMARY CARDS */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="clay-card p-5 bg-[#FFFFFF] border-2 border-[#FFFFFF]">
-            <span className="text-xs uppercase font-extrabold text-[#927B6C]">Registrations</span>
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-5 shadow-md">
+            <span className="text-xs uppercase font-bold text-[#8E725B]">Registrations</span>
             <div className="text-3xl font-black text-[#594337] mt-1">{stats.totalRegistrations} / 60</div>
-            <span className="text-[11px] text-[#927B6C] font-semibold">
+            <span className="text-[11px] text-[#D4A343] font-medium">
               {stats.spotsRemaining} spots available
             </span>
           </div>
 
-          <div className="clay-card p-5 bg-[#FFFFFF] border-2 border-[#FFFFFF]">
-            <span className="text-xs uppercase font-extrabold text-[#927B6C]">Total Attending</span>
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-5 shadow-md">
+            <span className="text-xs uppercase font-bold text-[#8E725B]">Total Attending</span>
             <div className="text-3xl font-black text-[#594337] mt-1">{stats.totalAttending}</div>
-            <span className="text-[11px] text-[#927B6C] font-semibold">
+            <span className="text-[11px] text-[#8E725B] font-medium">
               {stats.yesCount} classmates + {stats.totalGuests} guests
             </span>
           </div>
 
-          <div className="clay-card p-5 bg-[#FFFFFF] border-2 border-[#FFFFFF]">
-            <span className="text-xs uppercase font-extrabold text-[#927B6C]">Reunion Schedule</span>
-            <div className="text-xl sm:text-2xl font-black text-[#594337] mt-1">27 Dec 2026</div>
-            <span className="text-[11px] text-[#927B6C] font-semibold">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-5 shadow-md">
+            <span className="text-xs uppercase font-bold text-[#8E725B]">Reunion Schedule</span>
+            <div className="text-xl sm:text-2xl font-black text-[#D4A343] mt-1">27 Dec 2026</div>
+            <span className="text-[11px] text-[#8E725B] font-medium">
               10:00 AM IST • Confirmed
             </span>
           </div>
 
-          <div className="clay-card p-5 bg-[#FFFFFF] border-2 border-[#FFFFFF]">
-            <span className="text-xs uppercase font-extrabold text-[#927B6C]">Memory Cards Created</span>
-            <div className="text-3xl font-black text-[#E9B95B] mt-1">{stats.totalCardsGenerated}</div>
-            <span className="text-[11px] text-[#927B6C] font-semibold">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-5 shadow-md">
+            <span className="text-xs uppercase font-bold text-[#8E725B]">Memory Cards Created</span>
+            <div className="text-3xl font-black text-[#D4A343] mt-1">{stats.totalCardsGenerated}</div>
+            <span className="text-[11px] text-[#8E725B] font-medium">
               Personalized keepsakes downloaded
             </span>
           </div>
@@ -316,10 +316,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 sound.playPop();
                 setTab(t.id as any);
               }}
-              className={`px-4 py-2.5 rounded-t-2xl font-black text-xs sm:text-sm flex items-center space-x-2 transition border-b-2 ${
+              className={`px-4 py-2.5 rounded-t-2xl font-bold text-xs sm:text-sm flex items-center space-x-2 transition border-b-2 ${
                 tab === t.id
-                  ? 'clay-surface-cream text-[#594337] border-[#E9B95B]'
-                  : 'text-[#927B6C] hover:text-[#594337] border-transparent'
+                  ? 'bg-white text-[#594337] border-[#E9B95B] shadow-sm'
+                  : 'text-[#8E725B] hover:text-[#594337] border-transparent'
               }`}
             >
               <t.icon className="w-4 h-4" />
@@ -330,29 +330,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
         {/* TAB 1: REGISTRATIONS MANAGEMENT */}
         {tab === 'attendees' && (
-          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-6">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-6 space-y-6 shadow-xl">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
               <div className="relative flex-grow max-w-md">
-                <Search className="w-4 h-4 text-[#927B6C] absolute left-3.5 top-3.5" />
+                <Search className="w-4 h-4 text-[#8E725B] absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   placeholder="Search by name, phone, or batch..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 clay-input text-xs font-semibold"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
                 />
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold text-[#927B6C]">Status:</span>
+                <span className="text-xs font-bold text-[#8E725B]">Status:</span>
                 {(['All', 'Yes', 'Maybe', 'No'] as const).map((s) => (
                   <button
                     key={s}
                     onClick={() => setStatusFilter(s)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
                       statusFilter === s
-                        ? 'clay-button-gold text-[#413027] border-[#E9B95B]'
-                        : 'clay-button text-[#927B6C] border-[#F0E1CE]'
+                        ? 'bg-[#E9B95B] text-[#594337] border-[#D4A343]'
+                        : 'bg-white text-[#594337] border-[#F0E1CE] hover:bg-[#FFF5E8]'
                     }`}
                   >
                     {s}
@@ -362,7 +362,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   <button
                     onClick={handleClearAllRegistrations}
                     title="Clear test data to launch live for real classmates"
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold clay-button text-rose-700 border border-rose-200 hover:bg-rose-50 flex items-center space-x-1 transition"
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 flex items-center space-x-1 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Reset / Go Live</span>
@@ -374,7 +374,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
             {/* Table */}
             <div className="overflow-x-auto rounded-2xl border border-[#F0E1CE]">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#FFF5E8] text-[#594337] font-black uppercase tracking-wider border-b border-[#F0E1CE]">
+                <thead className="bg-[#FAF7F2] text-[#594337] font-bold uppercase tracking-wider border-b border-[#F0E1CE]">
                   <tr>
                     <th className="p-3.5">Name</th>
                     <th className="p-3.5">Mobile</th>
@@ -384,25 +384,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <th className="p-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F0E1CE] font-semibold text-[#594337]">
+                <tbody className="divide-y divide-[#F0E1CE] font-medium text-[#594337]">
                   {filteredRegistrations.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-6 text-center text-[#927B6C]">
+                      <td colSpan={6} className="p-6 text-center text-[#8E725B]">
                         No registrations match your search criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredRegistrations.map((r) => (
                       <tr key={r.id} className="hover:bg-[#FFFDF9] transition">
-                        <td className="p-3.5 font-bold">{r.name}</td>
-                        <td className="p-3.5 font-mono">{r.phone}</td>
+                        <td className="p-3.5 font-bold text-[#594337]">{r.name}</td>
+                        <td className="p-3.5 font-mono text-[#8E725B]">{r.phone}</td>
                         <td className="p-3.5">{r.batch}</td>
-                        <td className="p-3.5">+{r.guests}</td>
+                        <td className="p-3.5 text-[#D4A343] font-bold">+{r.guests}</td>
                         <td className="p-3.5">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${
-                            r.attendance_status === 'Yes' ? 'bg-emerald-100 text-emerald-800' :
-                            r.attendance_status === 'Maybe' ? 'bg-amber-100 text-amber-800' :
-                            'bg-rose-100 text-rose-800'
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            r.attendance_status === 'Yes' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                            r.attendance_status === 'Maybe' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                            'bg-rose-100 text-rose-800 border border-rose-300'
                           }`}>
                             {r.attendance_status}
                           </span>
@@ -410,14 +410,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                         <td className="p-3.5 text-right space-x-2">
                           <button
                             onClick={() => setEditingReg(r)}
-                            className="p-1.5 rounded-lg clay-button text-[#594337] hover:text-[#E9B95B]"
+                            className="p-1.5 rounded-lg bg-white hover:bg-[#FFF5E8] text-[#594337] border border-[#F0E1CE] shadow-sm"
                             title="Edit Registration"
                           >
                             <Edit className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => setDeletingId(r.id)}
-                            className="p-1.5 rounded-lg clay-button text-[#927B6C] hover:text-rose-600"
+                            className="p-1.5 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-[#F0E1CE] shadow-sm"
                             title="Delete Registration"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -434,20 +434,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
         {/* TAB 2: ANNOUNCEMENT MANAGEMENT */}
         {tab === 'announcement' && (
-          <div className="clay-card p-6 sm:p-8 bg-[#FFFFFF] border-2 border-[#FFFFFF] max-w-2xl mx-auto space-y-5">
-            <h3 className="text-lg font-black text-[#594337] pb-2 border-b border-[#F0E1CE]">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-6 sm:p-8 max-w-2xl mx-auto space-y-5 shadow-xl">
+            <h3 className="text-lg font-bold text-[#594337] pb-2 border-b border-[#F0E1CE]">
               Manage Official Announcement
             </h3>
 
-            <div className="space-y-4 text-xs font-bold">
+            <div className="space-y-4 text-xs font-semibold">
               <div>
-                <label className="block text-[#927B6C] mb-1">Announcement Message Note:</label>
+                <label className="block text-[#8E725B] mb-1">Announcement Message Note:</label>
                 <textarea
                   rows={3}
                   value={announcementNotes}
                   onChange={(e) => setAnnouncementNotes(e.target.value)}
                   placeholder="e.g. Venue finalized! Bus transportation arrangements details coming soon..."
-                  className="w-full px-4 py-3 clay-input text-xs font-semibold"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
                 />
               </div>
 
@@ -456,7 +456,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   sound.playPop();
                   updateSettings({ announcement_notes: announcementNotes });
                 }}
-                className="px-6 py-2.5 rounded-[16px] clay-button-gold text-xs font-black text-[#413027]"
+                className="px-6 py-2.5 rounded-[18px] bg-[#E9B95B] hover:bg-[#DFAB48] text-xs font-bold text-[#594337] shadow-sm transition"
               >
                 SAVE ANNOUNCEMENT NOTE
               </button>
@@ -466,20 +466,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
         {/* TAB 4: MEMORY CARDS MANAGEMENT */}
         {tab === 'cards' && (
-          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-6">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-6 space-y-6 shadow-xl">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-[#F0E1CE] gap-2">
               <div>
-                <h3 className="text-base font-black text-[#594337]">
+                <h3 className="text-base font-bold text-[#594337]">
                   Personalized Memory Card Studio Management
                 </h3>
-                <p className="text-xs text-[#927B6C]">
-                  Total Keepsake Downloads: <strong>{stats.totalCardsGenerated}</strong> cards rendered
+                <p className="text-xs text-[#8E725B]">
+                  Total Keepsake Downloads: <strong className="text-[#D4A343]">{stats.totalCardsGenerated}</strong> cards rendered
                 </p>
               </div>
 
               <button
                 onClick={() => toggleCardGenerator(!settings.card_generator_enabled)}
-                className="px-4 py-2 rounded-xl clay-button text-xs font-bold flex items-center space-x-2 border border-[#F0E1CE]"
+                className="px-4 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-semibold flex items-center space-x-2 text-[#594337] shadow-sm"
               >
                 {settings.card_generator_enabled ? (
                   <>
@@ -488,7 +488,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   </>
                 ) : (
                   <>
-                    <ToggleLeft className="w-5 h-5 text-rose-600" />
+                    <ToggleLeft className="w-5 h-5 text-rose-500" />
                     <span>Generator Disabled</span>
                   </>
                 )}
@@ -497,17 +497,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
             {/* Recent Cards List */}
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#927B6C]">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E725B]">
                 Recent Generated Card Activity
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {generatedCards.map((c) => (
-                  <div key={c.id} className="p-3.5 rounded-2xl clay-surface-beige space-y-1">
-                    <div className="text-xs font-black text-[#594337]">{c.studentName}</div>
-                    <div className="text-[11px] text-[#927B6C]">
-                      Template: <span className="font-bold text-[#594337] uppercase">{c.templateId}</span>
+                  <div key={c.id} className="p-3.5 rounded-2xl bg-[#FFFDF9] border border-[#F0E1CE] space-y-1 shadow-sm">
+                    <div className="text-xs font-bold text-[#594337]">{c.studentName}</div>
+                    <div className="text-[11px] text-[#8E725B]">
+                      Template: <span className="font-bold text-[#D4A343] uppercase">{c.templateId}</span>
                     </div>
-                    <div className="text-[10px] text-[#927B6C]">
+                    <div className="text-[10px] text-[#8E725B]">
                       Downloads: {c.downloadCount || 1} • {new Date(c.createdAt).toLocaleDateString()}
                     </div>
                   </div>
@@ -519,14 +519,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
         {/* TAB 5: CATERING / FOOD */}
         {tab === 'food' && (
-          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-6">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-6 space-y-6 shadow-xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#F0E1CE]">
-              <h3 className="text-base font-black text-[#594337]">
+              <h3 className="text-base font-bold text-[#594337]">
                 Biryani & Catering Preference Roster
               </h3>
               <button
                 onClick={exportFoodCSV}
-                className="px-4 py-2 rounded-xl clay-button text-xs font-bold text-[#594337] flex items-center space-x-1.5 border border-[#F0E1CE]"
+                className="px-4 py-2 rounded-xl bg-white border border-[#F0E1CE] hover:bg-[#FFF5E8] text-xs font-semibold text-[#594337] flex items-center space-x-1.5 shadow-sm transition"
               >
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                 <span>Export Catering Orders</span>
@@ -535,7 +535,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
             <div className="overflow-x-auto rounded-2xl border border-[#F0E1CE]">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#FFF5E8] text-[#594337] font-black uppercase tracking-wider border-b border-[#F0E1CE]">
+                <thead className="bg-[#FAF7F2] text-[#594337] font-bold uppercase tracking-wider border-b border-[#F0E1CE]">
                   <tr>
                     <th className="p-3.5">Attendee</th>
                     <th className="p-3.5">Diet</th>
@@ -544,20 +544,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <th className="p-3.5">Special Dietary Notes</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F0E1CE] font-semibold text-[#594337]">
+                <tbody className="divide-y divide-[#F0E1CE] font-medium text-[#594337]">
                   {foodPreferences.map((f) => (
                     <tr key={f.id} className="hover:bg-[#FFFDF9]">
-                      <td className="p-3.5 font-bold">{f.attendee_name}</td>
+                      <td className="p-3.5 font-bold text-[#594337]">{f.attendee_name}</td>
                       <td className="p-3.5">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          f.diet === 'Veg' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          f.diet === 'Veg' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
                         }`}>
                           {f.diet}
                         </span>
                       </td>
-                      <td className="p-3.5">{f.spice_level}</td>
-                      <td className="p-3.5">+{f.guests_count}</td>
-                      <td className="p-3.5 italic text-[#927B6C]">{f.notes || "None"}</td>
+                      <td className="p-3.5 text-[#8E725B]">{f.spice_level}</td>
+                      <td className="p-3.5 text-[#D4A343] font-bold">+{f.guests_count}</td>
+                      <td className="p-3.5 italic text-[#8E725B]">{f.notes || "None"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -568,33 +568,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
         {/* TAB 6: WALL MESSAGES MODERATION */}
         {tab === 'wall' && (
-          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-6">
-            <h3 className="text-base font-black text-[#594337] pb-3 border-b border-[#F0E1CE]">
+          <div className="clay-card bg-white/95 border border-[#F0E1CE] p-6 space-y-6 shadow-xl">
+            <h3 className="text-base font-bold text-[#594337] pb-3 border-b border-[#F0E1CE]">
               Message Wall Moderation
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {wallMessages.map((m) => (
-                <div key={m.id} className="p-4 rounded-2xl clay-surface-beige space-y-2 flex flex-col justify-between">
+                <div key={m.id} className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#F0E1CE] space-y-2 flex flex-col justify-between shadow-sm">
                   <div>
                     <div className="flex justify-between items-center text-xs font-bold text-[#594337]">
                       <span>{m.name}</span>
-                      {m.hidden && <span className="text-[10px] text-rose-600 font-black">(HIDDEN)</span>}
+                      {m.hidden && <span className="text-[10px] text-rose-500 font-bold">(HIDDEN)</span>}
                     </div>
-                    <p className="text-xs font-kalam text-[#594337] mt-1">"{m.message}"</p>
+                    <p className="text-xs font-kalam text-[#8E725B] mt-1">"{m.message}"</p>
                   </div>
 
                   <div className="flex justify-end space-x-2 pt-2 border-t border-[#F0E1CE]">
                     <button
                       onClick={() => toggleHideMessage(m.id, !m.hidden)}
-                      className="p-1.5 rounded-lg clay-button text-xs"
+                      className="p-1.5 rounded-lg bg-white border border-[#F0E1CE] text-xs"
                       title={m.hidden ? "Unhide" : "Hide"}
                     >
-                      {m.hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-rose-600" />}
+                      {m.hidden ? <Eye className="w-3.5 h-3.5 text-[#E9B95B]" /> : <EyeOff className="w-3.5 h-3.5 text-rose-500" />}
                     </button>
                     <button
                       onClick={() => deleteMessage(m.id)}
-                      className="p-1.5 rounded-lg clay-button text-xs text-rose-600"
+                      className="p-1.5 rounded-lg bg-white border border-[#F0E1CE] text-xs text-rose-500 hover:bg-rose-50"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -616,49 +616,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="max-w-md w-full clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-4"
+              className="max-w-md w-full clay-card bg-white border-2 border-[#F0E1CE] p-6 space-y-4 shadow-2xl text-[#594337]"
             >
               <div className="flex justify-between items-center pb-2 border-b border-[#F0E1CE]">
-                <h3 className="font-black text-sm text-[#594337]">Edit Student Registration</h3>
-                <button onClick={() => setEditingReg(null)} className="p-1 text-[#927B6C] hover:text-[#594337]">
+                <h3 className="font-bold text-sm text-[#594337]">Edit Student Registration</h3>
+                <button onClick={() => setEditingReg(null)} className="p-1 text-[#8E725B] hover:text-[#594337]">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveEdit} className="space-y-3 text-xs font-bold">
+              <form onSubmit={handleSaveEdit} className="space-y-3 text-xs font-semibold">
                 <div>
-                  <label className="block text-[#927B6C] mb-1">Full Name</label>
+                  <label className="block text-[#8E725B] mb-1">Full Name</label>
                   <input
                     type="text"
                     value={editingReg.name}
                     onChange={(e) => setEditingReg({ ...editingReg, name: e.target.value })}
-                    className="w-full px-3 py-2 clay-input text-xs font-semibold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[#927B6C] mb-1">Mobile Phone</label>
+                  <label className="block text-[#8E725B] mb-1">Mobile Phone</label>
                   <input
                     type="text"
                     value={editingReg.phone}
                     onChange={(e) => setEditingReg({ ...editingReg, phone: e.target.value })}
-                    className="w-full px-3 py-2 clay-input text-xs font-semibold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[#927B6C] mb-1">Batch / Section</label>
+                  <label className="block text-[#8E725B] mb-1">Batch / Section</label>
                   <input
                     type="text"
                     value={editingReg.batch}
                     onChange={(e) => setEditingReg({ ...editingReg, batch: e.target.value })}
-                    className="w-full px-3 py-2 clay-input text-xs font-semibold"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[#927B6C] mb-1">Attendance Status</label>
+                  <label className="block text-[#8E725B] mb-1">Attendance Status</label>
                   <select
                     value={editingReg.attendance_status}
                     onChange={(e) => setEditingReg({ ...editingReg, attendance_status: e.target.value as any })}
-                    className="w-full px-3 py-2 clay-input text-xs font-semibold bg-[#FFFDF9]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
                   >
                     <option value="Yes">Yes</option>
                     <option value="Maybe">Maybe</option>
@@ -670,13 +670,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   <button
                     type="button"
                     onClick={() => setEditingReg(null)}
-                    className="px-4 py-2 rounded-xl clay-button text-xs font-bold text-[#927B6C]"
+                    className="px-4 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#8E725B] hover:bg-[#FFF5E8]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl clay-button-gold text-xs font-black text-[#413027]"
+                    className="px-5 py-2 rounded-xl bg-[#E9B95B] hover:bg-[#DFAB48] text-xs font-bold text-[#594337] shadow-sm"
                   >
                     SAVE CHANGES
                   </button>
@@ -695,25 +695,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="max-w-sm w-full clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-4 text-center"
+              className="max-w-sm w-full clay-card bg-white border-2 border-[#F0E1CE] p-6 space-y-4 text-center shadow-2xl text-[#594337]"
             >
-              <div className="w-12 h-12 rounded-full bg-[#E9B8B0] text-rose-700 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-rose-100 border border-rose-300 text-rose-600 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-6 h-6" />
               </div>
-              <h3 className="font-black text-sm text-[#594337]">Delete Registration?</h3>
-              <p className="text-xs text-[#927B6C]">
+              <h3 className="font-bold text-sm text-[#594337]">Delete Registration?</h3>
+              <p className="text-xs text-[#8E725B]">
                 Are you sure you want to remove this registration record? This action cannot be undone.
               </p>
               <div className="pt-2 flex justify-center space-x-2">
                 <button
                   onClick={() => setDeletingId(null)}
-                  className="px-4 py-2 rounded-xl clay-button text-xs font-bold text-[#927B6C]"
+                  className="px-4 py-2 rounded-xl bg-white border border-[#F0E1CE] text-xs font-medium text-[#8E725B] hover:bg-[#FFF5E8]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-5 py-2 rounded-xl clay-surface-peach text-xs font-black text-rose-800 border border-rose-300"
+                  className="px-5 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-700 shadow-sm transition"
                 >
                   DELETE RECORD
                 </button>

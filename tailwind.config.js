@@ -7,6 +7,28 @@ export default {
   theme: {
     extend: {
       colors: {
+        midnight: {
+          DEFAULT: '#211B19',
+          darker: '#161210',
+          dark: '#1C1614',
+          surface: '#292321',
+          elevated: '#332C2A',
+        },
+        charcoal: {
+          DEFAULT: '#292321',
+          light: '#3D3532',
+          border: 'rgba(255, 245, 232, 0.12)',
+        },
+        bronze: {
+          DEFAULT: '#8E725B',
+          light: '#A68971',
+          dark: '#6E5643',
+        },
+        ivory: {
+          DEFAULT: '#FFF5E8',
+          muted: '#C5B2A0',
+          dim: '#9E8A78',
+        },
         cream: {
           DEFAULT: '#FFF5E8',
           50: '#FFFFFF',
@@ -30,6 +52,7 @@ export default {
           DEFAULT: '#E9B95B',
           light: '#F2CE85',
           dark: '#D99F37',
+          glow: 'rgba(233, 185, 91, 0.35)',
         },
         rose: {
           DEFAULT: '#E9B8B0',

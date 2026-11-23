@@ -1,85 +1,31 @@
-// Pure Web Audio API Sound Synthesizer - 100% reliable, zero external MP3 dependencies
+// Subtle Nostalgic Instrumental Background Music & Audio Manager
+// 100% reliable Web Audio API synthesis - zero external audio dependencies
+// Low, comfortable level (~10-12%), smooth gradual fade-in, no bell sounds.
 
 class SoundManager {
   private ctx: AudioContext | null = null;
-  private isMuted: boolean = true; // muted by default as requested
-  private ambientOscillators: OscillatorNode[] = [];
-  private ambientGain: GainNode | null = null;
-  private isAmbientPlaying: boolean = false;
+  private isMuted: boolean = false;
+  private musicGain: GainNode | null = null;
+  private isMusicPlaying: boolean = false;
+  private musicInterval: any = null;
 
   constructor() {
-    // Check saved mute preference
-    const saved = localStorage.getItem('star_matric_muted');
-    if (saved !== null) {
-      this.isMuted = saved === 'true';
-    }
+    // Keep volume subtle and unforced
   }
 
   private initCtx() {
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      this.ctx = new AudioCtx();
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+      }
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-  }
-
-  public getMuted(): boolean {
-    return this.isMuted;
-  }
-
-  public setMuted(muted: boolean) {
-    this.isMuted = muted;
-    localStorage.setItem('star_matric_muted', String(muted));
-    if (muted) {
-      this.stopAmbient();
-    } else {
-      this.startAmbient();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
     }
   }
 
-  public toggleMute(): boolean {
-    this.setMuted(!this.isMuted);
-    return this.isMuted;
-  }
-
-  // School Bell Chime - rich harmonic metallic resonance
-  public playSchoolBell() {
-    if (this.isMuted) return;
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-
-      const now = this.ctx.currentTime;
-      // Frequencies for a rich resonant brass school bell
-      const bellFreqs = [523.25, 784, 1046.5, 1568, 2093]; // C5, G5, C6, G6, C7
-      const gains = [0.4, 0.3, 0.2, 0.15, 0.08];
-
-      bellFreqs.forEach((freq, idx) => {
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = idx === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-
-        gain.gain.setValueAtTime(gains[idx], now);
-        // Exponential decay simulating brass vibration
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 2.8);
-      });
-    } catch {
-      // Audio not permitted yet
-    }
-  }
-
-  // Heart pop sound
+  // Gentle pop for subtle tactile feedback
   public playPop() {
     if (this.isMuted) return;
     try {
@@ -91,23 +37,23 @@ class SoundManager {
       const gain = this.ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(400, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(660, now + 0.05);
 
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
       osc.start(now);
-      osc.stop(now + 0.1);
+      osc.stop(now + 0.06);
     } catch {
-      // ignore
+      // Audio autoplay policy
     }
   }
 
-  // Success celebration fanfare
+  // Soft celebration chords
   public playCelebration() {
     if (this.isMuted) return;
     try {
@@ -115,83 +61,122 @@ class SoundManager {
       if (!this.ctx) return;
 
       const now = this.ctx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.5]; // C E G C (major arpeggio)
-      notes.forEach((freq, i) => {
+      const freqs = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+      freqs.forEach((freq, idx) => {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + i * 0.12);
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
 
-        gain.gain.setValueAtTime(0.25, now + i * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.6);
+        gain.gain.setValueAtTime(0.06, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.6);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
-        osc.start(now + i * 0.12);
-        osc.stop(now + i * 0.12 + 0.6);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.6);
       });
     } catch {
       // ignore
     }
   }
 
-  // Gentle Ambient Melodic Chime Loop (nostalgic, soft)
-  public startAmbient() {
-    if (this.isMuted || this.isAmbientPlaying) return;
+  // Start Subtle Nostalgic Instrumental Background Music
+  // Plays warm piano/harp arpeggios with gradual fade-in to ~10-12% volume
+  public startBackgroundMusic() {
+    if (this.isMusicPlaying || this.isMuted) return;
     try {
       this.initCtx();
       if (!this.ctx) return;
 
-      this.isAmbientPlaying = true;
+      this.isMusicPlaying = true;
       const masterGain = this.ctx.createGain();
-      masterGain.gain.setValueAtTime(0.04, this.ctx.currentTime); // gentle background volume
-      masterGain.connect(this.ctx.destination);
-      this.ambientGain = masterGain;
+      // Start at 0 volume and fade in gradually to 0.10 (10%) over 3 seconds
+      masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0.10, this.ctx.currentTime + 3.0);
 
-      // Soft ambient chord tones: C maj7 (C4, E4, G4, B4)
-      const chord = [261.63, 329.63, 392.00, 493.88];
-      this.ambientOscillators = chord.map((freq) => {
-        const osc = this.ctx!.createOscillator();
-        const lfo = this.ctx!.createOscillator();
-        const lfoGain = this.ctx!.createGain();
+      // Low-pass filter to give warmth, mimicking a distant piano/harp
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1400, this.ctx.currentTime);
+
+      masterGain.connect(filter);
+      filter.connect(this.ctx.destination);
+      this.musicGain = masterGain;
+
+      // Nostalgic Reunion Chord Progression:
+      // Chord 1: Cmaj7 (C3, G3, B3, E4)
+      // Chord 2: Am9   (A2, E3, G3, C4, B4)
+      // Chord 3: Fmaj7 (F2, C3, E3, A3, C4)
+      // Chord 4: Gsus4 (G2, D3, G3, C4, D4)
+      const chordNotes = [
+        [130.81, 196.00, 246.94, 329.63, 392.00], // C chord
+        [110.00, 164.81, 196.00, 261.63, 493.88], // Am chord
+        [87.31, 130.81, 164.81, 220.00, 261.63],  // F chord
+        [98.00, 146.83, 196.00, 261.63, 293.66],  // G chord
+      ];
+
+      let chordIndex = 0;
+      let noteIndex = 0;
+
+      const playNextArpeggioNote = () => {
+        if (!this.ctx || !this.isMusicPlaying || !this.musicGain) return;
+
+        const currentChord = chordNotes[chordIndex];
+        const freq = currentChord[noteIndex % currentChord.length];
+
+        const osc = this.ctx.createOscillator();
+        const noteGain = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, this.ctx!.currentTime);
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-        // Slow tremolo/chorus for nostalgic warmth
-        lfo.frequency.setValueAtTime(0.2, this.ctx!.currentTime);
-        lfoGain.gain.setValueAtTime(1.5, this.ctx!.currentTime);
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc.frequency);
+        // Soft acoustic envelope
+        const now = this.ctx.currentTime;
+        noteGain.gain.setValueAtTime(0.001, now);
+        noteGain.gain.linearRampToValueAtTime(0.08, now + 0.08);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.6);
 
-        osc.connect(masterGain);
-        osc.start();
-        lfo.start();
-        return osc;
-      });
+        osc.connect(noteGain);
+        noteGain.connect(this.musicGain);
+
+        osc.start(now);
+        osc.stop(now + 1.6);
+
+        noteIndex++;
+        if (noteIndex >= currentChord.length) {
+          noteIndex = 0;
+          chordIndex = (chordIndex + 1) % chordNotes.length;
+        }
+      };
+
+      // Play note every 480ms (~62 BPM gentle pace)
+      playNextArpeggioNote();
+      this.musicInterval = setInterval(playNextArpeggioNote, 480);
+
     } catch {
-      this.isAmbientPlaying = false;
+      this.isMusicPlaying = false;
     }
   }
 
-  public stopAmbient() {
-    this.ambientOscillators.forEach(osc => {
-      try {
-        osc.stop();
-        osc.disconnect();
-      } catch {
-        // ignore
-      }
-    });
-    this.ambientOscillators = [];
-    if (this.ambientGain) {
-      this.ambientGain.disconnect();
-      this.ambientGain = null;
+  public stopBackgroundMusic() {
+    if (this.musicInterval) {
+      clearInterval(this.musicInterval);
+      this.musicInterval = null;
     }
-    this.isAmbientPlaying = false;
+    if (this.musicGain && this.ctx) {
+      try {
+        this.musicGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 1.0);
+        setTimeout(() => {
+          this.musicGain?.disconnect();
+          this.musicGain = null;
+        }, 1000);
+      } catch {}
+    }
+    this.isMusicPlaying = false;
   }
 }
 

@@ -9,24 +9,20 @@ import {
   ZoomOut, 
   RotateCcw, 
   Sparkles, 
-  Star, 
-  CheckCircle2, 
   User, 
   Trash2, 
   RefreshCw,
   Image as ImageIcon,
   Check,
   AlertCircle,
-  GraduationCap,
   Eye,
-  X
+  X,
+  Move
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { REUNION_CONFIG } from '../config/reunionConfig';
 import { useReunionData } from '../context/ReunionDataContext';
 import { sound } from '../utils/soundEffects';
-
-export type CardTemplate = 'idcard' | 'classic' | 'golden' | 'vintage';
 
 interface MemoryCardGeneratorProps {
   initialStudentName?: string;
@@ -52,26 +48,15 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
       }
       return stored;
     }
-    return registrations[0]?.name || "";
+    return "";
   });
 
   const [studentBatch, setStudentBatch] = useState<string>(() => {
     if (currentRegistrant?.batch) return currentRegistrant.batch;
     const stored = localStorage.getItem('star_matric_last_registered_batch');
     if (stored) return stored;
-    return registrations[0]?.batch || "XII - A";
+    return "XII - A";
   });
-
-  // Purge any lingering example names on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('star_matric_last_registered_student');
-      if (stored && stored.toLowerCase().includes('krithik')) {
-        localStorage.removeItem('star_matric_last_registered_student');
-        setStudentName("");
-      }
-    } catch {}
-  }, []);
 
   // Photo & Canvas State
   const [photoSrc, setPhotoSrc] = useState<string | null>(null);
@@ -79,7 +64,6 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
   const [zoom, setZoom] = useState<number>(1);
   const [panX, setPanX] = useState<number>(0);
   const [panY, setPanY] = useState<number>(0);
-  const [template, setTemplate] = useState<CardTemplate>('idcard');
   const [hasConsent, setHasConsent] = useState<boolean>(true);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -88,22 +72,38 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const idCardTemplateImgRef = useRef<HTMLImageElement | null>(null);
 
   // Preload master blank ID card template image
   useEffect(() => {
+    let isMounted = true;
     const idImg = new Image();
     idImg.crossOrigin = "anonymous";
     idImg.onload = () => {
+      if (!isMounted) return;
       idCardTemplateImgRef.current = idImg;
       if (previewCanvasRef.current) {
         renderCardToCanvas(previewCanvasRef.current, false);
       }
     };
-    idImg.src = "/star-id-card-template.jpg";
+    idImg.onerror = () => {
+      // Fallback path
+      const fallbackImg = new Image();
+      fallbackImg.crossOrigin = "anonymous";
+      fallbackImg.onload = () => {
+        if (!isMounted) return;
+        idCardTemplateImgRef.current = fallbackImg;
+        if (previewCanvasRef.current) {
+          renderCardToCanvas(previewCanvasRef.current, false);
+        }
+      };
+      fallbackImg.src = "/star-id-card-template.jpg";
+    };
+    idImg.src = "/images/star-school-id-template.png";
+
+    return () => { isMounted = false; };
   }, []);
 
   // Sync initial student name & standard if passed or registered
@@ -120,9 +120,8 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
     }
   }, [initialStudentName, currentRegistrant, registrations]);
 
-  // Load photo by URL
+  // Load photo by URL (from registered student or upload)
   const loadPhotoFromUrl = (url: string) => {
-    sound.playPop();
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
@@ -133,26 +132,19 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
       setZoom(1);
     };
     img.onerror = () => {
-      const fallbackUrl = "/memories/classroom-teacher-teaching.jpg";
-      const fb = new Image();
-      fb.crossOrigin = "anonymous";
-      fb.onload = () => {
-        setPhotoImg(fb);
-        setPhotoSrc(fallbackUrl);
-      };
-      fb.src = fallbackUrl;
+      setPhotoImg(null);
+      setPhotoSrc(null);
+      setUploadError("Unable to load the photo. Please upload your photo directly.");
     };
     img.src = url;
   };
 
-  // Automatically load default classroom memory if no photo set
+  // Check stored photo in localStorage on mount
   useEffect(() => {
     if (!photoImg && !photoSrc) {
       const storedPhoto = localStorage.getItem('star_matric_last_registered_photo');
       if (storedPhoto) {
         loadPhotoFromUrl(storedPhoto);
-      } else {
-        loadPhotoFromUrl("/memories/classroom-teacher-teaching.jpg");
       }
     }
   }, []);
@@ -183,6 +175,9 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
         setPanX(0);
         setPanY(0);
         setZoom(1);
+        try {
+          localStorage.setItem('star_matric_last_registered_photo', dataUrl);
+        } catch {}
       };
       img.src = dataUrl;
     };
@@ -216,6 +211,9 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
     setPanX(0);
     setPanY(0);
     setZoom(1);
+    try {
+      localStorage.removeItem('star_matric_last_registered_photo');
+    } catch {}
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -226,7 +224,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
     setPanY(0);
   };
 
-  // Canvas Mouse Pan Drag Handlers
+  // Canvas Mouse / Touch Pan Drag Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!photoImg) return;
     setIsDragging(true);
@@ -248,242 +246,100 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // ==========================================
-    // 1. EXACT STAR SCHOOL ID CARD MASTER TEMPLATE
-    // ==========================================
-    if (template === 'idcard') {
-      const width = 776;
-      const height = 1024;
-      canvas.width = width;
-      canvas.height = height;
-
-      // Draw original ID card template as master background
-      if (idCardTemplateImgRef.current && idCardTemplateImgRef.current.complete) {
-        ctx.drawImage(idCardTemplateImgRef.current, 0, 0, width, height);
-      } else {
-        const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-        bgGrad.addColorStop(0, '#FFFFFF');
-        bgGrad.addColorStop(0.5, '#FFF7D6');
-        bgGrad.addColorStop(1, '#FFEB85');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, width, height);
-      }
-
-      // Exact Photo Frame Coordinates from blank ID template:
-      // Inner Portrait Frame: x: 254, y: 310, w: 268, h: 302
-      const frameX = 254;
-      const frameY = 310;
-      const frameW = 268;
-      const frameH = 302;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(frameX, frameY, frameW, frameH);
-      ctx.clip();
-
-      if (photoImg) {
-        const scale = zoom;
-        const naturalAspect = photoImg.naturalWidth / photoImg.naturalHeight;
-        const frameAspect = frameW / frameH;
-
-        let renderW: number;
-        let renderH: number;
-
-        if (naturalAspect > frameAspect) {
-          renderH = frameH * scale;
-          renderW = renderH * naturalAspect;
-        } else {
-          renderW = frameW * scale;
-          renderH = renderW / naturalAspect;
-        }
-
-        const renderX = frameX + (frameW - renderW) / 2 + panX;
-        const renderY = frameY + (frameH - renderH) / 2 + panY;
-
-        ctx.drawImage(photoImg, renderX, renderY, renderW, renderH);
-      } else {
-        ctx.fillStyle = '#EBEBEB';
-        ctx.fillRect(frameX, frameY, frameW, frameH);
-        ctx.fillStyle = '#777777';
-        ctx.font = 'bold 18px Outfit, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Upload Photo', frameX + frameW / 2, frameY + frameH / 2);
-      }
-      ctx.restore();
-
-      // Sharp Red Frame Border (Matching original template)
-      ctx.strokeStyle = '#D41414';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(251, 307, 274, 308);
-
-      // Student Name on "Name :" line
-      ctx.fillStyle = '#1A1A1A';
-      ctx.font = '900 24px Outfit, sans-serif';
-      ctx.textAlign = 'left';
-      const cleanName = studentName.trim();
-      if (cleanName) {
-        ctx.fillText(cleanName.toUpperCase(), 285, 663);
-      }
-
-      // Student Standard on "Section :" line
-      ctx.fillStyle = '#1A1A1A';
-      ctx.font = '800 23px Outfit, sans-serif';
-      ctx.textAlign = 'left';
-      const cleanBatch = studentBatch.trim();
-      if (cleanBatch) {
-        ctx.fillText(cleanBatch.toUpperCase(), 300, 733);
-      }
-
-      return;
-    }
-
-    // ==========================================
-    // 2. KEEPSAKE REUNION CARDS (1080 x 1350 px)
-    // ==========================================
-    const width = 1080;
-    const height = 1350;
+    // Master blank ID template dimensions: 776 x 1024
+    const width = 776;
+    const height = 1024;
     canvas.width = width;
     canvas.height = height;
 
-    if (template === 'golden') {
-      const grad = ctx.createLinearGradient(0, 0, width, height);
-      grad.addColorStop(0, '#FFF9F0');
-      grad.addColorStop(0.5, '#F0E1CE');
-      grad.addColorStop(1, '#E8D4BE');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.strokeStyle = '#E9B95B';
-      ctx.lineWidth = 14;
-      ctx.strokeRect(28, 28, width - 56, height - 56);
-
-      ctx.strokeStyle = '#D99F37';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(40, 40, width - 80, height - 80);
-
-    } else if (template === 'vintage') {
-      const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, '#FCF5EC');
-      grad.addColorStop(1, '#EFE3D3');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.strokeStyle = '#594337';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(32, 32, width - 64, height - 64);
-
-      ctx.strokeStyle = '#E9B8B0';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(44, 44, width - 88, height - 88);
-
+    // 1. Draw original ID card template as master background
+    if (idCardTemplateImgRef.current && idCardTemplateImgRef.current.complete && idCardTemplateImgRef.current.naturalWidth > 0) {
+      ctx.drawImage(idCardTemplateImgRef.current, 0, 0, width, height);
     } else {
-      // Classic Keepsake
-      const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, '#FFFFFF');
-      grad.addColorStop(0.4, '#FFF5E8');
-      grad.addColorStop(1, '#F0E1CE');
-      ctx.fillStyle = grad;
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, '#FFFFFF');
+      bgGrad.addColorStop(0.5, '#FFF7D6');
+      bgGrad.addColorStop(1, '#FFEB85');
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
-
-      ctx.strokeStyle = '#E9B95B';
-      ctx.lineWidth = 8;
-      ctx.strokeRect(30, 30, width - 60, height - 60);
-
-      ctx.strokeStyle = '#F6C9A8';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(42, 42, width - 84, height - 84);
     }
 
-    // Top Heading
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#927B6C';
-    ctx.font = '700 22px Outfit, sans-serif';
-    ctx.fillText("★ OFFICIAL REUNION KEEPSAKE ★", width / 2, 95);
-
-    ctx.fillStyle = '#594337';
-    ctx.font = '900 46px Outfit, sans-serif';
-    ctx.fillText(REUNION_CONFIG.schoolName.toUpperCase(), width / 2, 155);
-
-    ctx.fillStyle = '#E9B95B';
-    ctx.font = '800 30px Outfit, sans-serif';
-    ctx.fillText("SCHOOL FRIENDS REUNION 2026", width / 2, 200);
-
-    // Photo Box
-    const frameX = 165;
-    const frameY = 240;
-    const frameWidth = 750;
-    const frameHeight = 620;
-    const borderRadius = 28;
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.roundRect(frameX, frameY, frameWidth, frameHeight, borderRadius);
-    ctx.fill();
-
-    ctx.strokeStyle = template === 'golden' ? '#E9B95B' : '#F0E1CE';
-    ctx.lineWidth = 8;
-    ctx.stroke();
-
-    const photoInnerX = frameX + 14;
-    const photoInnerY = frameY + 14;
-    const photoInnerWidth = frameWidth - 28;
-    const photoInnerHeight = frameHeight - 28;
+    // 2. Exact Photo Frame Coordinates from original blank ID template:
+    // Inner Portrait Frame: x: 254, y: 310, w: 268, h: 302
+    const frameX = 254;
+    const frameY = 310;
+    const frameW = 268;
+    const frameH = 302;
 
     ctx.save();
     ctx.beginPath();
-    ctx.roundRect(photoInnerX, photoInnerY, photoInnerWidth, photoInnerHeight, borderRadius - 8);
+    ctx.rect(frameX, frameY, frameW, frameH);
     ctx.clip();
 
-    if (photoImg) {
+    if (photoImg && photoImg.complete && photoImg.naturalWidth > 0) {
       const scale = zoom;
       const naturalAspect = photoImg.naturalWidth / photoImg.naturalHeight;
-      const frameAspect = photoInnerWidth / photoInnerHeight;
+      const frameAspect = frameW / frameH;
 
       let renderW: number;
       let renderH: number;
 
       if (naturalAspect > frameAspect) {
-        renderH = photoInnerHeight * scale;
+        renderH = frameH * scale;
         renderW = renderH * naturalAspect;
       } else {
-        renderW = photoInnerWidth * scale;
+        renderW = frameW * scale;
         renderH = renderW / naturalAspect;
       }
 
-      const renderX = photoInnerX + (photoInnerWidth - renderW) / 2 + panX;
-      const renderY = photoInnerY + (photoInnerHeight - renderH) / 2 + panY;
+      const renderX = frameX + (frameW - renderW) / 2 + panX;
+      const renderY = frameY + (frameH - renderH) / 2 + panY;
 
       ctx.drawImage(photoImg, renderX, renderY, renderW, renderH);
     } else {
-      ctx.fillStyle = '#F0E1CE';
-      ctx.fillRect(photoInnerX, photoInnerY, photoInnerWidth, photoInnerHeight);
+      // Neutral clean placeholder prompting upload
+      ctx.fillStyle = '#F3EFEA';
+      ctx.fillRect(frameX, frameY, frameW, frameH);
+      
+      ctx.fillStyle = '#927B6C';
+      ctx.font = 'bold 18px "Outfit", "Segoe UI", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('UPLOAD PHOTO', frameX + frameW / 2, frameY + frameH / 2 - 10);
+      ctx.font = '13px "Outfit", "Segoe UI", Arial, sans-serif';
+      ctx.fillText('JPG, PNG or WebP', frameX + frameW / 2, frameY + frameH / 2 + 16);
     }
     ctx.restore();
 
-    // Student Badge Box
-    const badgeY = frameY + frameHeight + 35;
-    ctx.fillStyle = '#594337';
-    ctx.font = '900 52px Outfit, sans-serif';
-    ctx.fillText((studentName || "Classmate").toUpperCase(), width / 2, badgeY + 45);
+    // Sharp Red Frame Border (matching original template)
+    ctx.strokeStyle = '#D41414';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(251, 307, 274, 308);
 
-    ctx.fillStyle = '#927B6C';
-    ctx.font = '700 24px Outfit, sans-serif';
-    ctx.fillText(`Class of ${REUNION_CONFIG.batchYear} • Standard: ${studentBatch}`, width / 2, badgeY + 85);
+    // 3. Exact Text Placement:
+    // Student Name on "Name :" line (x: 285, y: 663)
+    ctx.fillStyle = '#1A1A1A';
+    ctx.font = '900 24px "Outfit", "Segoe UI", Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    const cleanName = studentName.trim();
+    if (cleanName) {
+      ctx.fillText(cleanName.toUpperCase(), 285, 663);
+    }
 
-    // Event Info
-    ctx.fillStyle = '#413027';
-    ctx.font = '800 22px Outfit, sans-serif';
-    ctx.fillText("📅 27 December 2026 • 10:00 AM (IST)", width / 2, badgeY + 140);
-    ctx.fillText(`📍 ${REUNION_CONFIG.schoolName}, Karur`, width / 2, badgeY + 175);
+    // Student Standard on "Std :" line (x: 290, y: 733)
+    ctx.fillStyle = '#1A1A1A';
+    ctx.font = '800 23px "Outfit", "Segoe UI", Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    const cleanBatch = studentBatch.trim();
+    if (cleanBatch) {
+      ctx.fillText(cleanBatch.toUpperCase(), 290, 733);
+    }
 
-    // Footer
-    ctx.fillStyle = '#927B6C';
-    ctx.font = '500 16px Outfit, sans-serif';
-    ctx.fillText(`Official Keepsake Pass • ${REUNION_CONFIG.schoolName}`, width / 2, 1310);
+  }, [studentName, studentBatch, photoImg, zoom, panX, panY]);
 
-  }, [template, studentName, studentBatch, photoImg, zoom, panX, panY]);
-
-  // Live Preview Canvas redraw
+  // Redraw Preview Canvas on state changes
   useEffect(() => {
     const previewCanvas = previewCanvasRef.current;
     if (previewCanvas) {
@@ -502,6 +358,14 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
     sound.playCelebration();
 
     try {
+      // Ensure master ID card template image is loaded
+      if (idCardTemplateImgRef.current && !idCardTemplateImgRef.current.complete) {
+        await new Promise((resolve) => {
+          if (idCardTemplateImgRef.current) idCardTemplateImgRef.current.onload = resolve;
+          else resolve(null);
+        });
+      }
+
       const exportCanvas = document.createElement('canvas');
       renderCardToCanvas(exportCanvas, true);
 
@@ -515,10 +379,8 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
         colors: ['#E9B95B', '#E9B8B0', '#F6C9A8', '#594337']
       });
 
-      const cleanName = (studentName || "Alumni").replace(/[^a-zA-Z0-9_-]/g, '_');
-      const filename = template === 'idcard' 
-        ? `Star_Matric_ID_Card_${cleanName}.png`
-        : `School_Friends_Reunion_2026_${cleanName}.png`;
+      const cleanFilename = (studentName || "Alumni").replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `Star_Matric_ID_Card_${cleanFilename}.png`;
 
       exportCanvas.toBlob((blob) => {
         if (!blob) {
@@ -536,7 +398,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
         URL.revokeObjectURL(url);
 
         // Record tracking in context
-        recordCardGenerated(studentName || "Classmate", template);
+        recordCardGenerated(studentName || "Classmate", 'idcard');
         setIsExporting(false);
       }, 'image/png');
 
@@ -557,29 +419,25 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
 
         exportCanvas.toBlob(async (blob) => {
           if (blob && navigator.canShare) {
-            const cleanName = (studentName || "Alumni").replace(/[^a-zA-Z0-9_-]/g, '_');
-            const filename = `Star_Matric_Reunion_${cleanName}.png`;
+            const cleanFilename = (studentName || "Alumni").replace(/[^a-zA-Z0-9_-]/g, '_');
+            const filename = `Star_Matric_ID_Card_${cleanFilename}.png`;
             const file = new File([blob], filename, { type: 'image/png' });
 
             if (navigator.canShare({ files: [file] })) {
               try {
                 await navigator.share({
                   files: [file],
-                  title: `${REUNION_CONFIG.schoolName} Reunion Keepsake`,
-                  text: `Here is my personalized School Friends Reunion card! Join the reunion here: ${window.location.origin}`
+                  title: `${REUNION_CONFIG.schoolName} School ID Card`,
+                  text: `Here is my official STAR School ID Card for our Reunion on 27 December 2026! Generate yours here: ${window.location.origin}`
                 });
                 return;
-              } catch (e) {
-                // Cancelled or unsupported file share
-              }
+              } catch (e) {}
             }
           }
           openWhatsAppTextShare();
         }, 'image/png');
         return;
-      } catch (err) {
-        // Fallback
-      }
+      } catch (err) {}
     }
 
     openWhatsAppTextShare();
@@ -587,17 +445,20 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
 
   const openWhatsAppTextShare = () => {
     const siteUrl = window.location.origin;
-    const shareText = `Check out my personalized keepsake memory card for our School Friends Reunion 2026 (${REUNION_CONFIG.schoolName})!\n\nGenerate your own STAR ID card and register here: ${siteUrl}`;
+    const shareText = `Check out my official STAR School ID Card for our School Friends Reunion 2026 (${REUNION_CONFIG.schoolName})!\n\nGenerate your own ID card and register here: ${siteUrl}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
   return (
-    <section id="memory-card" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+    <section id="memory-card" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12 relative">
+      {/* Decorative background glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#E9B95B]/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+
       {/* 1. Header from Prompt */}
-      <div className="text-center space-y-3 max-w-3xl mx-auto">
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full clay-pill bg-[#FFFFFF] text-[#594337] text-xs font-bold uppercase tracking-wider">
+      <div className="text-center space-y-4 max-w-3xl mx-auto">
+        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full clay-pill bg-[#FFFFFF] text-xs font-bold uppercase tracking-wider text-[#594337] border border-[#F0E1CE]">
           <Camera className="w-3.5 h-3.5 text-[#E9B95B]" />
-          <span>Dynamic Keepsake Studio</span>
+          <span>Star School ID Card Studio</span>
         </div>
 
         {/* Heading from Prompt */}
@@ -607,53 +468,101 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
 
         {/* Supporting text from Prompt */}
         <p className="text-sm sm:text-base text-[#927B6C] max-w-2xl mx-auto leading-relaxed font-semibold">
-          Your school memories deserve to be remembered. Create your personalized reunion keepsake and download it.
+          Your school memories deserve to be remembered. Generate your official STAR MATRIC HR SEC SCHOOL ID card and download it.
         </p>
       </div>
 
-      {/* 2. Main Studio Form Container (Single Column Focused) */}
-      <div className="max-w-xl mx-auto space-y-6">
+      {/* 2. Interactive Studio Grid: Preview on Left, Controls on Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
+        
+        {/* LEFT COLUMN: LIVE ID CARD CANVAS PREVIEW */}
+        <div className="lg:col-span-5 order-1 lg:order-1 flex flex-col items-center">
+          <div className="clay-card p-4 sm:p-6 bg-[#FFFFFF] border-2 border-[#F0E1CE] w-full max-w-[420px] mx-auto text-center space-y-4 shadow-md">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0E1CE]">
+              <div className="flex items-center space-x-2 text-xs font-black uppercase text-[#594337]">
+                <Sparkles className="w-4 h-4 text-[#E9B95B]" />
+                <span>Original ID Card Live Preview</span>
+              </div>
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#E9B95B]/20 text-[#594337] border border-[#E9B95B]/40">
+                776 × 1024
+              </span>
+            </div>
+
+            {/* Interactive Canvas Stage */}
+            <div 
+              className="relative inline-block mx-auto rounded-2xl overflow-hidden shadow-2xl border-4 border-[#FFF5E8] bg-[#FFF5E8] cursor-grab active:cursor-grabbing select-none group"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              title="Click and drag to position your photo"
+            >
+              <canvas
+                ref={previewCanvasRef}
+                className="w-full max-w-[340px] sm:max-w-[370px] h-auto block rounded-xl"
+              />
+
+              {photoImg && (
+                <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-[#594337]/90 text-[#FFF5E8] text-[10px] font-bold flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <Move className="w-3 h-3 text-[#E9B95B]" />
+                  <span>Drag to pan photo</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-[11px] text-[#927B6C] font-semibold">
+              {photoImg 
+                ? "💡 Drag directly on the card above to reposition your photo." 
+                : "Upload your student photo on the right to place it in the portrait frame."}
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: CONTROLS & PHOTO ADJUSTMENTS */}
+        <div className="lg:col-span-7 order-2 lg:order-2 space-y-6">
           
           {/* Card 1: Student Information */}
-          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-4">
-            <div className="flex items-center space-x-2 pb-2 border-b border-[#F0E1CE]">
+          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#F0E1CE] space-y-4 shadow-sm">
+            <div className="flex items-center space-x-2 pb-3 border-b border-[#F0E1CE]">
               <User className="w-4 h-4 text-[#E9B95B]" />
-              <h3 className="font-black text-sm text-[#594337] uppercase tracking-wider">
+              <h3 className="font-bold text-sm text-[#594337] uppercase tracking-wider">
                 1. Student Details on ID Card
               </h3>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#927B6C] mb-1.5">
-                Student Full Name:
-              </label>
-              <input
-                type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                placeholder="Enter student full name"
-                className="w-full px-4 py-3 clay-input text-sm font-bold text-[#594337]"
-              />
-            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-[#927B6C] mb-1.5">
+                  Student Full Name:
+                </label>
+                <input
+                  type="text"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full px-4 py-3 clay-input text-sm font-semibold text-[#594337]"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#927B6C] mb-1.5">
-                Standard / Section:
-              </label>
-              <input
-                type="text"
-                value={studentBatch}
-                onChange={(e) => setStudentBatch(e.target.value)}
-                placeholder="e.g. XII - A"
-                className="w-full px-4 py-3 clay-input text-sm font-bold text-[#594337]"
-              />
+              <div>
+                <label className="block text-xs font-bold text-[#927B6C] mb-1.5">
+                  Standard / Section (Std):
+                </label>
+                <input
+                  type="text"
+                  value={studentBatch}
+                  onChange={(e) => setStudentBatch(e.target.value)}
+                  placeholder="e.g. XII - A"
+                  className="w-full px-4 py-3 clay-input text-sm font-semibold text-[#594337]"
+                />
+              </div>
             </div>
 
             {/* Quick prefill from registered classmates */}
             {registrations.length > 0 && (
-              <div>
+              <div className="pt-1">
                 <label className="block text-[11px] font-semibold text-[#927B6C] mb-1">
-                  Or select from registered classmates:
+                  Or select registered student:
                 </label>
                 <select
                   onChange={(e) => {
@@ -664,12 +573,12 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                       if (selected.photo_url) loadPhotoFromUrl(selected.photo_url);
                     }
                   }}
-                  className="w-full px-3 py-2 clay-input text-xs font-bold text-[#594337] bg-[#FFFDF9]"
+                  className="w-full px-3 py-2 clay-input text-xs font-semibold text-[#594337] bg-[#FFFDF9]"
                   defaultValue=""
                 >
-                  <option value="" disabled>Choose registered name...</option>
+                  <option value="" disabled className="bg-[#FFFFFF] text-[#594337]">Choose from registered classmates ({registrations.length} students)...</option>
                   {registrations.map(r => (
-                    <option key={r.id} value={r.name}>{r.name} ({r.batch})</option>
+                    <option key={r.id || r.phone} value={r.name} className="bg-[#FFFFFF] text-[#594337]">{r.name} ({r.batch || 'XII'})</option>
                   ))}
                 </select>
               </div>
@@ -677,12 +586,12 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
           </div>
 
           {/* Card 2: Photo Upload & Positioning */}
-          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-5">
-            <div className="flex items-center justify-between pb-2 border-b border-[#F0E1CE]">
+          <div className="clay-card p-6 bg-[#FFFFFF] border-2 border-[#F0E1CE] space-y-5 shadow-sm">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0E1CE]">
               <div className="flex items-center space-x-2">
                 <ImageIcon className="w-4 h-4 text-[#E9B95B]" />
-                <h3 className="font-black text-sm text-[#594337] uppercase tracking-wider">
-                  2. Upload Your Photograph
+                <h3 className="font-bold text-sm text-[#594337] uppercase tracking-wider">
+                  2. Upload Student Photograph
                 </h3>
               </div>
               {photoSrc && (
@@ -710,91 +619,34 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                 className="hidden"
                 onChange={onFileInputChange}
               />
-              <div className="w-12 h-12 rounded-full bg-[#FFFFFF] text-[#E9B95B] group-hover:scale-110 flex items-center justify-center mx-auto shadow-sm transition">
+              <div className="w-12 h-12 rounded-full bg-[#FFFFFF] text-[#E9B95B] group-hover:scale-110 flex items-center justify-center mx-auto shadow-sm transition border border-[#F0E1CE]">
                 <Upload className="w-6 h-6" />
               </div>
-              <div className="text-xs sm:text-sm font-black text-[#594337]">
+              <div className="text-xs sm:text-sm font-bold text-[#594337]">
                 {photoSrc ? "Click or drag to replace photo" : "Click to select or drag photo here"}
               </div>
               <div className="text-[11px] text-[#927B6C]">
-                Supports JPG, JPEG, PNG, WebP (Max 10MB)
-              </div>
-            </div>
-
-            {/* Quick Batch Photo Selection Chips */}
-            <div className="space-y-2">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#927B6C]">
-                Or test with school memory photos:
-              </label>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => loadPhotoFromUrl("/memories/classroom-teacher-teaching.jpg")}
-                  className={`p-2 rounded-xl text-left font-bold transition flex items-center space-x-2 border ${
-                    photoSrc === "/memories/classroom-teacher-teaching.jpg"
-                      ? "bg-[#FFF5E8] border-[#E9B95B] text-[#594337] shadow-sm"
-                      : "bg-[#FFFFFF] border-[#F0E1CE] text-[#927B6C] hover:bg-[#FFFDF9]"
-                  }`}
-                >
-                  <span>👨‍🏫</span>
-                  <span className="truncate">Our Teacher</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => loadPhotoFromUrl("/memories/teacher-student-science-lab.jpg")}
-                  className={`p-2 rounded-xl text-left font-bold transition flex items-center space-x-2 border ${
-                    photoSrc === "/memories/teacher-student-science-lab.jpg"
-                      ? "bg-[#FFF5E8] border-[#E9B95B] text-[#594337] shadow-sm"
-                      : "bg-[#FFFFFF] border-[#F0E1CE] text-[#927B6C] hover:bg-[#FFFDF9]"
-                  }`}
-                >
-                  <span>🔬</span>
-                  <span className="truncate">Science Lab</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => loadPhotoFromUrl("/memories/school-computer-lab.jpg")}
-                  className={`p-2 rounded-xl text-left font-bold transition flex items-center space-x-2 border ${
-                    photoSrc === "/memories/school-computer-lab.jpg"
-                      ? "bg-[#FFF5E8] border-[#E9B95B] text-[#594337] shadow-sm"
-                      : "bg-[#FFFFFF] border-[#F0E1CE] text-[#927B6C] hover:bg-[#FFFDF9]"
-                  }`}
-                >
-                  <span>💻</span>
-                  <span className="truncate">Computer Lab</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => loadPhotoFromUrl("/memories/star-matric-batch-official.jpg")}
-                  className={`p-2 rounded-xl text-left font-bold transition flex items-center space-x-2 border ${
-                    photoSrc === "/memories/star-matric-batch-official.jpg"
-                      ? "bg-[#FFF5E8] border-[#E9B95B] text-[#594337] shadow-sm"
-                      : "bg-[#FFFFFF] border-[#F0E1CE] text-[#927B6C] hover:bg-[#FFFDF9]"
-                  }`}
-                >
-                  <span>🎓</span>
-                  <span className="truncate">Official Batch</span>
-                </button>
+                Supports JPG, JPEG, PNG, WebP (Max 10MB) • Preserved in high resolution
               </div>
             </div>
 
             {uploadError && (
-              <div className="p-3 rounded-xl bg-[#E9B8B0]/40 border border-[#E9B8B0] text-xs font-bold text-[#594337] flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-700 flex-shrink-0" />
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800 flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                 <span>{uploadError}</span>
               </div>
             )}
 
-            {/* Photo Adjustments (Zoom & Pan) */}
+            {/* Photo Adjustments (Zoom & Reset) */}
             {photoSrc && (
               <div className="space-y-4 pt-2 border-t border-[#F0E1CE]">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-[#594337] uppercase">
+                  <span className="text-xs font-bold text-[#594337] uppercase">
                     Photo Adjustments
                   </span>
                   <button
                     onClick={handleResetAdjustments}
-                    className="text-xs font-bold text-[#927B6C] hover:text-[#594337] flex items-center space-x-1"
+                    className="text-xs font-medium text-[#927B6C] hover:text-[#594337] flex items-center space-x-1 transition"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Reset</span>
@@ -803,10 +655,10 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
 
                 {/* Zoom Slider */}
                 <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold text-[#927B6C]">
+                  <div className="flex justify-between text-xs font-medium text-[#927B6C]">
                     <span className="flex items-center space-x-1">
                       <ZoomOut className="w-3.5 h-3.5" />
-                      <span>Zoom:</span>
+                      <span>Zoom / Scale:</span>
                     </span>
                     <span>{Math.round(zoom * 100)}%</span>
                   </div>
@@ -820,27 +672,22 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                     className="w-full accent-[#E9B95B] cursor-pointer"
                   />
                 </div>
-
-                {/* Pan Instructions */}
-                <div className="p-2.5 rounded-xl clay-surface-beige text-[11px] font-semibold text-[#594337] text-center">
-                  💡 Drag the photo directly on the preview card on the right to position it!
-                </div>
               </div>
             )}
           </div>
 
-          {/* Card 3: Official STAR School ID Card Badge */}
-          <div className="clay-card p-4 sm:p-5 bg-[#FFFFFF] border-2 border-[#FFFFFF] flex items-center space-x-3.5">
+          {/* Card 3: School Branding Confirmation */}
+          <div className="clay-card p-4 sm:p-5 bg-[#FFFFFF] border-2 border-[#F0E1CE] flex items-center space-x-3.5 shadow-sm">
             <div className="w-11 h-11 rounded-2xl bg-[#FFF5E8] border border-[#F0E1CE] text-[#E9B95B] flex items-center justify-center flex-shrink-0 text-xl shadow-sm">
               🎓
             </div>
             <div>
               <div className="text-xs font-black uppercase text-[#594337] tracking-wider flex items-center space-x-1.5">
-                <span>Official STAR School ID Card</span>
+                <span>Official STAR MATRIC HR SEC SCHOOL ID Card</span>
                 <span className="text-[#E9B95B]">★</span>
               </div>
               <div className="text-[11px] text-[#927B6C] font-semibold mt-0.5">
-                Official ID card artwork with school crest, Karur address & signature
+                Preserving original yellow layout, school crest, building photo & signature
               </div>
             </div>
           </div>
@@ -855,7 +702,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
               className="mt-1 accent-[#E9B95B] rounded"
             />
             <label htmlFor="photoConsent" className="text-xs text-[#927B6C] leading-relaxed cursor-pointer select-none">
-              I consent to processing my photograph purely within my browser to render my personalized reunion ID card.
+              I confirm this is my photograph and details for the official Star School ID Card.
             </label>
           </div>
 
@@ -864,31 +711,31 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
             <button
               onClick={handleDownloadPNG}
               disabled={isExporting}
-              className="w-full py-4 px-6 rounded-[20px] clay-button-gold text-base font-black flex items-center justify-center space-x-2.5 shadow-md disabled:opacity-50 hover:scale-[1.02] transition"
+              className="w-full py-4 px-6 rounded-[22px] clay-button-gold text-base font-bold flex items-center justify-center space-x-2.5 disabled:opacity-50 transition text-[#413027]"
             >
               {isExporting ? (
                 <>
                   <RefreshCw className="w-5 h-5 animate-spin text-[#413027]" />
-                  <span>Generating & Downloading ID Card...</span>
+                  <span>Generating High-Quality PNG...</span>
                 </>
               ) : (
                 <>
                   <Download className="w-5 h-5 text-[#413027]" />
-                  <span>DOWNLOAD STAR SCHOOL ID CARD</span>
+                  <span>DOWNLOAD STAR SCHOOL ID CARD (PNG)</span>
                 </>
               )}
             </button>
 
             <button
               onClick={handleShareWhatsApp}
-              className="w-full py-3.5 px-6 rounded-[20px] clay-button text-sm font-black text-[#594337] flex items-center justify-center space-x-2 border border-[#E9B95B]"
+              className="w-full py-3.5 px-6 rounded-[22px] clay-button text-sm font-bold text-[#594337] flex items-center justify-center space-x-2 border border-[#E9B95B]"
             >
               <Share2 className="w-4 h-4 text-[#E9B95B]" />
               <span>Share on WhatsApp</span>
             </button>
           </div>
 
-          {/* DOWNLOADED CARD DISPLAY & VIEW ("seen is enough") */}
+          {/* DOWNLOADED CARD DISPLAY & VIEW */}
           <AnimatePresence>
             {downloadedCardUrl && (
               <motion.div
@@ -897,7 +744,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                 exit={{ opacity: 0 }}
                 className="clay-card p-6 sm:p-8 bg-[#FFFFFF] border-2 border-[#E9B95B] rounded-[28px] text-center space-y-5 shadow-xl"
               >
-                <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
                   <Check className="w-4 h-4 text-emerald-600" />
                   <span>ID Card Downloaded Successfully!</span>
                 </div>
@@ -906,7 +753,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                   <h3 className="text-xl sm:text-2xl font-black text-[#594337]">
                     Official STAR School ID Card
                   </h3>
-                  <p className="text-xs text-[#927B6C] font-semibold">
+                  <p className="text-xs text-[#927B6C] font-medium">
                     Saved directly to your device downloads folder
                   </p>
                 </div>
@@ -922,7 +769,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsViewModalOpen(true)}
-                    className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-[#594337]/90 text-[#FFF5E8] text-[11px] font-black flex items-center space-x-1 shadow-md hover:scale-105 transition"
+                    className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-[#594337]/90 text-[#FFF5E8] text-[11px] font-bold flex items-center space-x-1 shadow-md hover:scale-105 transition"
                   >
                     <Eye className="w-3.5 h-3.5 text-[#E9B95B]" />
                     <span>View Full Size</span>
@@ -933,7 +780,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   <button
                     onClick={handleDownloadPNG}
-                    className="w-full sm:w-auto px-6 py-3 rounded-[16px] clay-button-gold text-xs font-black flex items-center justify-center space-x-2"
+                    className="w-full sm:w-auto px-6 py-3 rounded-[18px] clay-button-gold text-xs font-bold flex items-center justify-center space-x-2 text-[#413027]"
                   >
                     <Download className="w-4 h-4 text-[#413027]" />
                     <span>Download Again</span>
@@ -941,7 +788,7 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
 
                   <button
                     onClick={handleShareWhatsApp}
-                    className="w-full sm:w-auto px-6 py-3 rounded-[16px] clay-button text-xs font-bold text-[#594337] flex items-center justify-center space-x-2 border border-[#E9B95B]"
+                    className="w-full sm:w-auto px-6 py-3 rounded-[18px] clay-button text-xs font-bold text-[#594337] flex items-center justify-center space-x-2 border border-[#E9B95B]"
                   >
                     <Share2 className="w-4 h-4 text-[#E9B95B]" />
                     <span>Share on WhatsApp</span>
@@ -952,62 +799,63 @@ export const MemoryCardGeneratorSection: React.FC<MemoryCardGeneratorProps> = ({
           </AnimatePresence>
 
         </div>
+      </div>
 
-        {/* Full Size Modal Lightbox */}
-        <AnimatePresence>
-          {isViewModalOpen && downloadedCardUrl && (
+      {/* Full Size Modal Lightbox */}
+      <AnimatePresence>
+        {isViewModalOpen && downloadedCardUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsViewModalOpen(false)}
+            className="fixed inset-0 z-50 bg-[#594337]/60 backdrop-blur-md flex items-center justify-center p-4 select-none"
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsViewModalOpen(false)}
-              className="fixed inset-0 z-50 bg-[#594337]/80 backdrop-blur-md flex items-center justify-center p-4 select-none"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-md w-full bg-[#FFFFFF] p-6 rounded-[28px] border-2 border-[#F0E1CE] shadow-2xl text-center space-y-4"
             >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="relative max-w-md w-full bg-[#FFFFFF] p-5 rounded-[28px] shadow-2xl text-center space-y-4"
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-full clay-button text-[#594337] hover:text-rose-600 border border-[#F0E1CE]"
               >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h4 className="text-base font-bold text-[#594337]">
+                STAR School ID Card (Official Keepsake)
+              </h4>
+
+              <div className="rounded-2xl overflow-hidden shadow-inner max-h-[75vh] flex items-center justify-center bg-[#FFF5E8]">
+                <img
+                  src={downloadedCardUrl}
+                  alt="STAR School ID Card"
+                  className="max-h-[70vh] w-auto object-contain rounded-xl"
+                />
+              </div>
+
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={handleDownloadPNG}
+                  className="px-6 py-2.5 rounded-[18px] clay-button-gold text-xs font-bold flex items-center space-x-1.5 text-[#413027]"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download PNG</span>
+                </button>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="absolute top-4 right-4 p-2 rounded-full clay-button text-[#594337] hover:text-rose-600 shadow"
+                  className="px-5 py-2.5 rounded-[18px] clay-button text-xs font-semibold text-[#927B6C] border border-[#F0E1CE]"
                 >
-                  <X className="w-5 h-5" />
+                  Close
                 </button>
-
-                <h4 className="text-base font-black text-[#594337]">
-                  STAR School ID Card (Official Keepsake)
-                </h4>
-
-                <div className="rounded-2xl overflow-hidden shadow-inner max-h-[75vh] flex items-center justify-center bg-[#FFF5E8]">
-                  <img
-                    src={downloadedCardUrl}
-                    alt="STAR School ID Card"
-                    className="max-h-[70vh] w-auto object-contain rounded-xl"
-                  />
-                </div>
-
-                <div className="flex items-center justify-center gap-3">
-                  <button
-                    onClick={handleDownloadPNG}
-                    className="px-6 py-2.5 rounded-[16px] clay-button-gold text-xs font-black flex items-center space-x-1.5"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download PNG</span>
-                  </button>
-                  <button
-                    onClick={() => setIsViewModalOpen(false)}
-                    className="px-5 py-2.5 rounded-[16px] clay-button text-xs font-bold text-[#927B6C]"
-                  >
-                    Close
-                  </button>
-                </div>
-              </motion.div>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </section>
-    );
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
 };

@@ -42,11 +42,14 @@ export const FoodPreferenceSection: React.FC = () => {
   const totalFeastPlates = stats.nonVegCount + stats.vegCount;
 
   return (
-    <section id="food-poll" className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <section id="food-poll" className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative">
+      {/* Glow highlight */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#E9B95B]/10 rounded-full blur-[90px] pointer-events-none -z-10" />
+
       {/* Header */}
-      <div className="text-center space-y-3 mb-10">
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full clay-pill bg-[#FFFFFF] text-[#594337] text-xs font-black uppercase tracking-wider">
-          <MapPin className="w-3.5 h-3.5 text-rose-600" />
+      <div className="text-center space-y-4 mb-10">
+        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full clay-pill text-[#594337] text-xs font-bold uppercase tracking-wider border border-[#F0E1CE]">
+          <MapPin className="w-3.5 h-3.5 text-[#E9B95B]" />
           <span>Feast Venue: {REUNION_CONFIG.confirmedVenueName}</span>
         </div>
 
@@ -61,22 +64,22 @@ export const FoodPreferenceSection: React.FC = () => {
           We are moving to <strong>{REUNION_CONFIG.confirmedVenueName}</strong> for our grand reunion feast! Select your dietary preference and spice level.
         </p>
 
-        {/* Helpline Contact Pill */}
+        {/* Any doubts call Contact Pill */}
         <div className="pt-2">
           <a
             href={REUNION_CONFIG.contactPhoneTel}
             onClick={() => sound.playPop()}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full clay-surface-cream border border-[#E9B95B] text-xs font-black text-[#594337] hover:scale-105 transition shadow-sm"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full clay-pill border border-[#E9B95B] text-xs font-semibold text-[#594337] hover:scale-105 transition shadow-sm"
           >
             <Phone className="w-4 h-4 text-[#E9B95B]" />
-            <span>Have doubts about food or travel? Call: <strong>{REUNION_CONFIG.contactPhone}</strong></span>
+            <span>Any doubts call: <strong className="text-[#594337]">{REUNION_CONFIG.contactPhone}</strong></span>
           </a>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT: Live Animated Biryani Pot / Plate Counter (5 cols) */}
-        <div className="lg:col-span-5 clay-card p-6 sm:p-8 bg-[#FFFFFF] border-2 border-[#FFFFFF] space-y-6 text-center">
+        <div className="lg:col-span-5 clay-card p-6 sm:p-8 space-y-6 text-center bg-[#FFFFFF] border-2 border-[#F0E1CE]">
           <div className="relative inline-block mx-auto">
             <div className="text-7xl select-none animate-float-slow">
               🍲
@@ -94,19 +97,19 @@ export const FoodPreferenceSection: React.FC = () => {
 
           {/* Non-veg vs Veg Split */}
           <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="p-4 rounded-2xl clay-surface-peach text-left">
+            <div className="p-4 rounded-2xl clay-surface-peach text-left border border-[#F6C9A8]">
               <div className="flex items-center space-x-1.5 text-[#594337] mb-1">
                 <Flame className="w-4 h-4 text-rose-600" />
-                <span className="text-xs font-black uppercase tracking-wider">Non-Veg</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#594337]">Non-Veg</span>
               </div>
               <div className="text-3xl font-black text-[#594337]">{stats.nonVegCount}</div>
               <div className="text-[11px] text-[#927B6C] font-semibold">Mutton / Chicken Biryani</div>
             </div>
 
-            <div className="p-4 rounded-2xl clay-surface-beige text-left">
+            <div className="p-4 rounded-2xl clay-surface-beige text-left border border-[#F0E1CE]">
               <div className="flex items-center space-x-1.5 text-[#594337] mb-1">
                 <Leaf className="w-4 h-4 text-emerald-600" />
-                <span className="text-xs font-black uppercase tracking-wider">Veg</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#594337]">Veg</span>
               </div>
               <div className="text-3xl font-black text-[#594337]">{stats.vegCount}</div>
               <div className="text-[11px] text-[#927B6C] font-semibold">Paneer / Mushroom Feast</div>
@@ -115,19 +118,19 @@ export const FoodPreferenceSection: React.FC = () => {
 
           {/* Spice Breakdown */}
           <div className="pt-2 border-t border-[#F0E1CE]">
-            <div className="text-[11px] font-black uppercase tracking-wider text-[#927B6C] mb-2">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#927B6C] mb-2">
               Spice Preference Breakdown
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2 rounded-xl clay-surface-cream">
+              <div className="p-2.5 rounded-xl clay-surface-cream border border-[#F0E1CE]">
                 <div className="text-xs font-bold text-[#927B6C]">Mild</div>
                 <div className="text-base font-black text-[#594337]">{stats.mildCount}</div>
               </div>
-              <div className="p-2 rounded-xl clay-surface-cream">
+              <div className="p-2.5 rounded-xl clay-surface-cream border border-[#F0E1CE]">
                 <div className="text-xs font-bold text-[#927B6C]">Medium</div>
                 <div className="text-base font-black text-[#594337]">{stats.mediumCount}</div>
               </div>
-              <div className="p-2 rounded-xl clay-surface-cream">
+              <div className="p-2.5 rounded-xl clay-surface-cream border border-[#F0E1CE]">
                 <div className="text-xs font-bold text-[#927B6C]">Spicy 🔥</div>
                 <div className="text-base font-black text-[#594337]">{stats.spicyCount}</div>
               </div>
@@ -136,7 +139,7 @@ export const FoodPreferenceSection: React.FC = () => {
         </div>
 
         {/* RIGHT: Preference Form (7 cols) */}
-        <div className="lg:col-span-7 clay-card p-6 sm:p-8 bg-[#FFFFFF] border-2 border-[#FFFFFF]">
+        <div className="lg:col-span-7 clay-card p-6 sm:p-8 bg-[#FFFFFF] border-2 border-[#F0E1CE]">
           {submitted ? (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -149,12 +152,12 @@ export const FoodPreferenceSection: React.FC = () => {
               <h3 className="text-2xl font-black text-[#594337]">
                 Biryani Order Saved!
               </h3>
-              <p className="text-xs sm:text-sm text-[#927B6C] max-w-sm mx-auto">
+              <p className="text-xs sm:text-sm text-[#927B6C] max-w-sm mx-auto font-semibold">
                 Thank you! Your dietary choice of <strong>{diet} ({spiceLevel} Spice)</strong> has been recorded for the kitchen team.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="px-6 py-2.5 rounded-[16px] clay-button text-xs font-bold text-[#594337] border border-[#F0E1CE]"
+                className="px-6 py-2.5 rounded-[18px] clay-button text-xs font-bold text-[#594337] border border-[#F0E1CE]"
               >
                 Update My Order
               </button>
@@ -176,7 +179,7 @@ export const FoodPreferenceSection: React.FC = () => {
                   placeholder="Your Name"
                   value={attendeeName}
                   onChange={(e) => setAttendeeName(e.target.value)}
-                  className="w-full px-4 py-3 clay-input text-sm font-semibold"
+                  className="w-full px-4 py-3 clay-input text-sm font-bold text-[#594337]"
                 />
               </div>
 
@@ -194,8 +197,8 @@ export const FoodPreferenceSection: React.FC = () => {
                       className={`py-3.5 px-4 rounded-[18px] font-black text-xs sm:text-sm flex items-center justify-center space-x-2 transition border ${
                         diet === d
                           ? d === 'Non-veg'
-                            ? 'clay-surface-peach border-[#E9B95B] shadow-md text-[#594337]'
-                            : 'clay-surface-beige border-emerald-500 shadow-md text-[#594337]'
+                            ? 'clay-surface-peach border-[#E9B95B] text-[#594337] shadow-md'
+                            : 'clay-surface-beige border-emerald-500 text-[#594337] shadow-md'
                           : 'clay-button border-[#F0E1CE] text-[#927B6C]'
                       }`}
                     >
@@ -217,7 +220,7 @@ export const FoodPreferenceSection: React.FC = () => {
                       key={level}
                       type="button"
                       onClick={() => setSpiceLevel(level)}
-                      className={`py-3 rounded-[16px] font-bold text-xs transition border ${
+                      className={`py-3 rounded-[18px] font-bold text-xs transition border ${
                         spiceLevel === level
                           ? 'clay-button-gold text-[#413027] border-[#E9B95B]'
                           : 'clay-button border-[#F0E1CE] text-[#927B6C]'
@@ -239,14 +242,14 @@ export const FoodPreferenceSection: React.FC = () => {
                   placeholder="e.g. Extra raitha, Jain veg, no peanuts, etc."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 clay-input text-sm font-semibold"
+                  className="w-full px-4 py-3 clay-input text-sm font-semibold text-[#594337]"
                 />
               </div>
 
               <div className="pt-2 text-center">
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-9 py-3.5 rounded-[18px] clay-button-gold text-sm font-black tracking-wide"
+                  className="w-full sm:w-auto px-9 py-3.5 rounded-[22px] clay-button-gold text-sm font-black tracking-wide text-[#413027]"
                 >
                   SAVE BIRYANI PREFERENCE
                 </button>

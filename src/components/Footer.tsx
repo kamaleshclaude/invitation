@@ -19,7 +19,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
           <span className="font-bold text-xs text-[#927B6C]">Reunion 2026</span>
         </div>
 
-        <p className="max-w-lg mx-auto text-[#927B6C] text-sm leading-relaxed">
+        <p className="max-w-lg mx-auto text-[#927B6C] text-sm leading-relaxed font-semibold">
           "{REUNION_CONFIG.headline}"<br />
           Bringing together our classmates, childhood laughter, and timeless school memories.
         </p>
@@ -30,17 +30,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
             <span>Venue: <strong>{REUNION_CONFIG.confirmedVenueName}</strong></span>
           </div>
 
-          <span>•</span>
+          <span className="text-[#F0E1CE]">•</span>
 
           <a
             href={REUNION_CONFIG.contactPhoneTel}
             className="flex items-center space-x-1 text-[#594337] hover:text-[#E9B95B] transition"
           >
             <Phone className="w-3.5 h-3.5 text-[#E9B95B]" />
-            <span>Doubts or Queries: <strong>{REUNION_CONFIG.contactPhone}</strong></span>
+            <span>Any doubts call: <strong className="text-[#594337]">{REUNION_CONFIG.contactPhone}</strong></span>
           </a>
 
-          <span>•</span>
+          <span className="text-[#F0E1CE]">•</span>
 
           <a
             href={REUNION_CONFIG.whatsappGroupUrl}
@@ -49,10 +49,10 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
             className="flex items-center space-x-1.5 hover:text-[#E9B95B] transition"
           >
             <MessageCircle className="w-4 h-4 text-emerald-600" />
-            <span>Official WhatsApp</span>
+            <span className="text-[#594337]">Official WhatsApp</span>
           </a>
 
-          <span>•</span>
+          <span className="text-[#F0E1CE]">•</span>
 
           <button
             onClick={onOpenAdmin}
