@@ -7,6 +7,7 @@ import { AboutSection } from './components/AboutSection';
 import { SchoolMemoryGallery } from './components/SchoolMemoryGallery';
 import { RegistrationSection } from './components/RegistrationSection';
 import { MemoryCardGeneratorSection } from './components/MemoryCardGeneratorSection';
+import { VotePollSection } from './components/VotePollSection';
 import { FoodPreferenceSection } from './components/FoodPreferenceSection';
 import { BenchMapSection } from './components/BenchMapSection';
 import { MessageWallSection } from './components/MessageWallSection';
@@ -192,6 +193,9 @@ export const AppContent: React.FC = () => {
               initialStudentName={prefilledStudentName}
             />
           )}
+
+          {/* 8. Reunion Voting & Confirmed Announcement (Node 05: Venue, Node 06: Date, Node 07: Final Announcement) */}
+          <VotePollSection />
 
           {/* 8. Feast & Biryani Counter */}
           <FoodPreferenceSection />

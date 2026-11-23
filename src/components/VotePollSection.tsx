@@ -37,8 +37,8 @@ export const VotePollSection: React.FC = () => {
   const [voteError, setVoteError] = useState<string | null>(null);
   const [voteSuccess, setVoteSuccess] = useState<string | null>(null);
 
-  const venues: VenueInfo[] = [REUNION_CONFIG.venues.venue1, REUNION_CONFIG.venues.venue2];
-  const dateOptions: DateOptionInfo[] = REUNION_CONFIG.dateOptions;
+  const venues: VenueInfo[] = (REUNION_CONFIG.venues ? [REUNION_CONFIG.venues.venue1, REUNION_CONFIG.venues.venue2] : []).filter(Boolean);
+  const dateOptions: DateOptionInfo[] = REUNION_CONFIG.dateOptions || [];
 
   const totalVenueVotes = stats.totalVenueVotes;
   const totalDateVotes = stats.totalDateVotes;
@@ -81,9 +81,9 @@ export const VotePollSection: React.FC = () => {
   const isFinalAnnouncementReady = isVenueLocked || isDateLocked;
 
   const confirmedVenue = settings.locked_venue_id === 'venue-vellu'
-    ? REUNION_CONFIG.venues.venue1
+    ? REUNION_CONFIG.venues?.venue1
     : settings.locked_venue_id === 'venue-habbebi'
-    ? REUNION_CONFIG.venues.venue2
+    ? REUNION_CONFIG.venues?.venue2
     : null;
 
   const confirmedDate = settings.locked_date_id === 'date-dec-25'
@@ -95,74 +95,6 @@ export const VotePollSection: React.FC = () => {
   return (
     <section id="venue-poll" className="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-16">
       
-      {/* ================= 1. FINAL REUNION ANNOUNCEMENT (PHASE 10) ================= */}
-      <div className="clay-card p-6 sm:p-10 bg-gradient-to-br from-[#FFF5E8] via-[#FFFFFF] to-[#F0E1CE] border-2 border-[#E9B95B] relative overflow-hidden">
-        <div className="absolute top-3 right-4 text-2xl text-[#E9B95B] select-none">★</div>
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full clay-pill bg-[#FFFFFF] text-[#594337] text-xs font-black uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-[#E9B95B]" />
-            <span>Reunion Headquarters Announcement</span>
-          </div>
-
-          <h3 className="text-2xl sm:text-4xl font-black text-[#594337] tracking-tight">
-            {isFinalAnnouncementReady ? "Official Confirmed Reunion Details" : "Final Reunion Announcement"}
-          </h3>
-
-          {isFinalAnnouncementReady ? (
-            <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#F0E1CE] shadow-sm space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                <div className="p-4 rounded-xl clay-surface-beige">
-                  <div className="text-[11px] font-black uppercase tracking-wider text-[#927B6C] flex items-center space-x-1.5">
-                    <CalendarIcon className="w-3.5 h-3.5 text-[#E9B95B]" />
-                    <span>Confirmed Date</span>
-                  </div>
-                  <div className="text-base sm:text-lg font-black text-[#594337] mt-1">
-                    {confirmedDate || "Voting In Progress (Dec 25 / Dec 27)"}
-                  </div>
-                  <div className="text-xs text-[#927B6C] mt-0.5">Time: {REUNION_CONFIG.eventTimeText}</div>
-                </div>
-
-                <div className="p-4 rounded-xl clay-surface-beige">
-                  <div className="text-[11px] font-black uppercase tracking-wider text-[#927B6C] flex items-center space-x-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#E9B8B0]" />
-                    <span>Confirmed Venue</span>
-                  </div>
-                  <div className="text-base sm:text-lg font-black text-[#594337] mt-1">
-                    {confirmedVenue ? confirmedVenue.name : "Voting In Progress (Vellu vs Habbebi)"}
-                  </div>
-                  <div className="text-xs text-[#927B6C] mt-0.5">{confirmedVenue?.address || "Selected by alumni vote"}</div>
-                </div>
-              </div>
-
-              {settings.announcement_notes && (
-                <p className="text-xs sm:text-sm text-[#594337] italic font-kalam">
-                  "{settings.announcement_notes}"
-                </p>
-              )}
-
-              <a
-                href={REUNION_CONFIG.whatsappGroupUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 px-6 py-3 rounded-[16px] clay-button-gold text-xs sm:text-sm font-black"
-              >
-                <span>Share Confirmed Details on WhatsApp</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-          ) : (
-            <div className="p-6 rounded-2xl clay-surface-cream text-center space-y-2 border border-[#F0E1CE]">
-              <p className="text-base sm:text-lg font-black text-[#594337]">
-                "Reunion details coming soon!"
-              </p>
-              <p className="text-xs sm:text-sm text-[#927B6C] max-w-lg mx-auto">
-                Our voting polls are live below. Once all classmates cast their votes, the reunion committee will finalize and lock the chosen venue and date here!
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Notifications */}
       {voteError && (
         <div className="max-w-md mx-auto p-4 rounded-2xl bg-[#E9B8B0]/40 border border-[#E9B8B0] text-[#594337] text-center text-xs sm:text-sm font-bold">
@@ -175,8 +107,8 @@ export const VotePollSection: React.FC = () => {
         </div>
       )}
 
-      {/* ================= 2. VENUE VOTING (PHASE 7) ================= */}
-      <div className="space-y-8">
+      {/* ================= 1. VENUE VOTING (Node 05) ================= */}
+      <div id="venue-voting" className="space-y-8 scroll-mt-24">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full clay-pill bg-[#FFFFFF] text-[#594337] text-xs font-bold uppercase tracking-wider">
             <MapPin className="w-3.5 h-3.5 text-[#E9B95B]" />
@@ -312,8 +244,8 @@ export const VotePollSection: React.FC = () => {
         </div>
       </div>
 
-      {/* ================= 3. DATE VOTING (PHASE 8) ================= */}
-      <div className="space-y-8 pt-4">
+      {/* ================= 2. DATE VOTING (Node 06) ================= */}
+      <div id="date-voting" className="space-y-8 pt-4 scroll-mt-24">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full clay-pill bg-[#FFFFFF] text-[#594337] text-xs font-bold uppercase tracking-wider">
             <CalendarIcon className="w-3.5 h-3.5 text-[#E9B8B0]" />
@@ -426,6 +358,74 @@ export const VotePollSection: React.FC = () => {
               </motion.div>
             );
           })}
+        </div>
+      </div>
+
+      {/* ================= 3. FINAL REUNION ANNOUNCEMENT (Node 07) ================= */}
+      <div id="reunion-announcement" className="clay-card p-6 sm:p-10 bg-gradient-to-br from-[#FFF5E8] via-[#FFFFFF] to-[#F0E1CE] border-2 border-[#E9B95B] relative overflow-hidden scroll-mt-24">
+        <div className="absolute top-3 right-4 text-2xl text-[#E9B95B] select-none">★</div>
+        <div className="text-center space-y-3 max-w-2xl mx-auto">
+          <div className="inline-flex items-center space-x-2 px-4 py-1 rounded-full clay-pill bg-[#FFFFFF] text-[#594337] text-xs font-black uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-[#E9B95B]" />
+            <span>Reunion Headquarters Announcement</span>
+          </div>
+
+          <h3 className="text-2xl sm:text-4xl font-black text-[#594337] tracking-tight">
+            {isFinalAnnouncementReady ? "Official Confirmed Reunion Details" : "Final Reunion Announcement"}
+          </h3>
+
+          {isFinalAnnouncementReady ? (
+            <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#F0E1CE] shadow-sm space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                <div className="p-4 rounded-xl clay-surface-beige">
+                  <div className="text-[11px] font-black uppercase tracking-wider text-[#927B6C] flex items-center space-x-1.5">
+                    <CalendarIcon className="w-3.5 h-3.5 text-[#E9B95B]" />
+                    <span>Confirmed Date</span>
+                  </div>
+                  <div className="text-base sm:text-lg font-black text-[#594337] mt-1">
+                    {confirmedDate || "Sunday, 27 December 2026"}
+                  </div>
+                  <div className="text-xs text-[#927B6C] mt-0.5">Time: {REUNION_CONFIG.eventTimeText}</div>
+                </div>
+
+                <div className="p-4 rounded-xl clay-surface-beige">
+                  <div className="text-[11px] font-black uppercase tracking-wider text-[#927B6C] flex items-center space-x-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#E9B8B0]" />
+                    <span>Confirmed Venue</span>
+                  </div>
+                  <div className="text-base sm:text-lg font-black text-[#594337] mt-1">
+                    {confirmedVenue ? confirmedVenue.name : "Dindigul Vellu Biriyani Gardens"}
+                  </div>
+                  <div className="text-xs text-[#927B6C] mt-0.5">{confirmedVenue?.address || "Selected by alumni vote & committee"}</div>
+                </div>
+              </div>
+
+              {settings.announcement_notes && (
+                <p className="text-xs sm:text-sm text-[#594337] italic font-kalam">
+                  "{settings.announcement_notes}"
+                </p>
+              )}
+
+              <a
+                href={REUNION_CONFIG.whatsappGroupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 px-6 py-3 rounded-[16px] clay-button-gold text-xs sm:text-sm font-black"
+              >
+                <span>Share Confirmed Details on WhatsApp</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+          ) : (
+            <div className="p-6 rounded-2xl clay-surface-cream text-center space-y-2 border border-[#F0E1CE]">
+              <p className="text-base sm:text-lg font-black text-[#594337]">
+                "Reunion details confirmed: 27 December 2026 at Dindigul Vellu Biriyani Gardens!"
+              </p>
+              <p className="text-xs sm:text-sm text-[#927B6C] max-w-lg mx-auto">
+                Voting polls are active below for additional preferences. All registered students will receive official STAR ID badges on reunion day!
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
