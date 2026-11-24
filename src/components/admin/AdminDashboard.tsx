@@ -69,20 +69,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   // Edit Registration Modal State
   const [editingReg, setEditingReg] = useState<Registration | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [viewPhotoUrl, setViewPhotoUrl] = useState<string | null>(null);
 
   // Announcement edit
   const [announcementNotes, setAnnouncementNotes] = useState(settings.announcement_notes || '');
 
-  // Login Handler (Master PIN / Admin password fallback: "star2026", "admin123", or "reunion2026")
+  // Login Handler (Admin password: "krithik2007")
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'star2026' || password === 'admin123' || password === 'reunion2026') {
+    if (password === 'krithik2007') {
       sound.playCelebration();
       setIsAuthenticated(true);
       setAuthError(null);
     } else {
       sound.playPop();
-      setAuthError('Invalid Admin credentials. (Hint: star2026)');
+      setAuthError('Invalid Admin credentials.');
     }
   };
 
@@ -203,7 +204,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 type="password"
                 required
                 autoFocus
-                placeholder="Enter password (e.g. star2026)"
+                placeholder="Enter admin password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-[#F0E1CE] text-sm font-medium text-[#594337] focus:outline-none focus:border-[#E9B95B]"
@@ -376,24 +377,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#FAF7F2] text-[#594337] font-bold uppercase tracking-wider border-b border-[#F0E1CE]">
                   <tr>
+                    <th className="p-3.5">Photo</th>
                     <th className="p-3.5">Name</th>
                     <th className="p-3.5">Mobile</th>
-                    <th className="p-3.5">Batch</th>
+                    <th className="p-3.5">Standard / Batch</th>
                     <th className="p-3.5">Guests</th>
                     <th className="p-3.5">Status</th>
+                    <th className="p-3.5">Registered At</th>
                     <th className="p-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F0E1CE] font-medium text-[#594337]">
                   {filteredRegistrations.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-6 text-center text-[#8E725B]">
+                      <td colSpan={8} className="p-6 text-center text-[#8E725B]">
                         No registrations match your search criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredRegistrations.map((r) => (
                       <tr key={r.id} className="hover:bg-[#FFFDF9] transition">
+                        <td className="p-3.5">
+                          {r.photo_url ? (
+                            <img
+                              src={r.photo_url}
+                              alt={r.name}
+                              onClick={() => setViewPhotoUrl(r.photo_url || null)}
+                              className="w-9 h-9 rounded-full object-cover border border-[#E9B95B] cursor-pointer hover:scale-110 transition shadow-sm"
+                              title="Click to view full photo"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-[#FFF5E8] border border-[#F0E1CE] flex items-center justify-center text-xs font-bold text-[#8E725B]">
+                              {r.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </td>
                         <td className="p-3.5 font-bold text-[#594337]">{r.name}</td>
                         <td className="p-3.5 font-mono text-[#8E725B]">{r.phone}</td>
                         <td className="p-3.5">{r.batch}</td>
@@ -406,6 +424,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           }`}>
                             {r.attendance_status}
                           </span>
+                        </td>
+                        <td className="p-3.5 text-[11px] text-[#8E725B]">
+                          {r.created_at ? new Date(r.created_at).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}
                         </td>
                         <td className="p-3.5 text-right space-x-2">
                           <button
@@ -717,6 +738,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 >
                   DELETE RECORD
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PHOTO PREVIEW MODAL */}
+      <AnimatePresence>
+        {viewPhotoUrl && (
+          <div 
+            onClick={() => setViewPhotoUrl(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm cursor-pointer"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-md w-full clay-card bg-white border-2 border-[#F0E1CE] p-4 space-y-3 shadow-2xl text-center"
+            >
+              <div className="flex justify-between items-center pb-2 border-b border-[#F0E1CE]">
+                <h4 className="font-bold text-sm text-[#594337]">Student Photograph</h4>
+                <button onClick={() => setViewPhotoUrl(null)} className="p-1 text-[#8E725B] hover:text-[#594337]">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="rounded-xl overflow-hidden max-h-[70vh] flex items-center justify-center bg-[#FFF5E8]">
+                <img
+                  src={viewPhotoUrl}
+                  alt="Student full preview"
+                  className="w-full h-auto max-h-[65vh] object-contain rounded-lg"
+                />
               </div>
             </motion.div>
           </div>

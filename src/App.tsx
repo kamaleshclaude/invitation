@@ -7,10 +7,7 @@ import { AboutSection } from './components/AboutSection';
 import { SchoolMemoryGallery } from './components/SchoolMemoryGallery';
 import { RegistrationSection } from './components/RegistrationSection';
 import { MemoryCardGeneratorSection } from './components/MemoryCardGeneratorSection';
-import { FoodPreferenceSection } from './components/FoodPreferenceSection';
-import { BenchMapSection } from './components/BenchMapSection';
 import { MessageWallSection } from './components/MessageWallSection';
-import { BellGameSection } from './components/BellGameSection';
 import { WhatsAppSection } from './components/WhatsAppSection';
 import { HeartCursorTrail } from './components/HeartCursorTrail';
 import { BranchingNodeNetwork } from './components/BranchingNodeNetwork';
@@ -193,19 +190,10 @@ export const AppContent: React.FC = () => {
             />
           )}
 
-          {/* 8. Confirmed Feast at Habbibi Mandi */}
-          <FoodPreferenceSection />
-
-          {/* 9. Classroom Bench Map */}
-          <BenchMapSection />
-
-          {/* 10. Sticky Notes Memory Wall */}
+          {/* 8. Sticky Notes Memory Wall */}
           <MessageWallSection />
 
-          {/* 11. Bell Game Mini-Challenge */}
-          <BellGameSection />
-
-          {/* 12. WhatsApp Sharing & QR Section */}
+          {/* 9. WhatsApp Sharing & QR Section */}
           <WhatsAppSection />
         </main>
 

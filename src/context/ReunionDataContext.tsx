@@ -134,8 +134,12 @@ export const ReunionDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   useEffect(() => {
     fetchLiveStats();
-    // Poll every 20 seconds for live production updates
-    const interval = setInterval(fetchLiveStats, 20000);
+    // Poll every 25 seconds for live production updates (only when tab is visible to conserve bandwidth)
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchLiveStats();
+      }
+    }, 25000);
     return () => clearInterval(interval);
   }, [fetchLiveStats]);
 

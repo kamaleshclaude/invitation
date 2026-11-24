@@ -20,11 +20,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (supabase) {
-      // Query database count of registered attendees
+      // Query database count of registered attendees (head: true is high-performance count query)
       const { count, error } = await supabase
         .from('registrations')
-        .select('id', { count: 'exact' })
-        .limit(1);
+        .select('id', { count: 'exact', head: true });
 
       if (error) {
         console.error('Database count query error:', error);
@@ -34,11 +33,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
-      const totalRegistered = count || 0;
+      const totalRegistered = count ?? 0;
       const availableSlots = Math.max(0, MAX_CAPACITY - totalRegistered);
       const isCapacityFull = totalRegistered >= MAX_CAPACITY;
 
       return res.status(200).json({
+        configured: true,
         totalRegistered,
         availableSlots,
         capacity: MAX_CAPACITY,
@@ -49,10 +49,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Fallback if database env is not provided yet
     return res.status(200).json({
-      totalRegistered: 0,
+      configured: false,
+      totalRegistered: null,
       availableSlots: MAX_CAPACITY,
       capacity: MAX_CAPACITY,
       isCapacityFull: false,
+      message: 'Supabase environment variables not configured on server',
       timestamp: new Date().toISOString()
     });
 

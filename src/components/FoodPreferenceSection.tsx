@@ -42,7 +42,7 @@ export const FoodPreferenceSection: React.FC = () => {
   const totalFeastPlates = stats.nonVegCount + stats.vegCount;
 
   return (
-    <section id="food-feast" className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative scroll-mt-24">
+    <section id="food-poll" className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative">
       {/* Glow highlight */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#E9B95B]/10 rounded-full blur-[90px] pointer-events-none -z-10" />
 
@@ -55,13 +55,13 @@ export const FoodPreferenceSection: React.FC = () => {
 
         <h2 className="text-3xl sm:text-5xl font-black text-[#594337] tracking-tight">
           <span className="text-[#E9B95B] font-kalam text-4xl sm:text-6xl block mb-1">
-            "Mandi Feast is Waiting!"
+            "Biryani is Waiting!"
           </span>
-          Feast at {REUNION_CONFIG.confirmedVenueName}
+          Feast at Habbi Mandi Karur
         </h2>
 
         <p className="text-sm sm:text-base text-[#927B6C] max-w-xl mx-auto leading-relaxed font-semibold">
-          We are gathering at <strong>{REUNION_CONFIG.confirmedVenueName}</strong> on <strong>27 December 2026</strong> for our grand reunion feast! Select your dietary preference and spice level below.
+          We are moving to <strong>{REUNION_CONFIG.confirmedVenueName}</strong> for our grand reunion feast! Select your dietary preference and spice level.
         </p>
 
         {/* Any doubts call Contact Pill */}

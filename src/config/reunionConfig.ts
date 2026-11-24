@@ -53,45 +53,8 @@ export const REUNION_CONFIG = {
   organizerName: "Reunion Organizing Committee",
   
   // Confirmed Restaurant / Venue
-  confirmedVenueName: "Habbibi Mandi",
-  confirmedVenueDescription: "Habbebi Arabian Mandi & Multi-Cuisine Lounge, Karur",
-
-  venues: {
-    venue1: {
-      id: "venue-habbebi",
-      name: "Habbibi Mandi",
-      shortName: "Habbibi Mandi",
-      description: "Air-conditioned luxury lounge featuring authentic Arabian Mandi platters, grills, and private party hall.",
-      address: "Covai Road, Karur, Tamil Nadu",
-      googleMapsUrl: "https://maps.google.com/?q=Habbibi+Mandi+Karur",
-      embedMapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.892!2d78.08!3d10.96!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTDCsDU3JzM2LjAiTiA3OMKwMDQnNDguMCJF!5e0!3m2!1sen!2sin!4v1600000000000!5m2!1sen!2sin",
-      features: ["Central Air Conditioning", "Arabian Mandi & Grills", "Private Sound & Lighting", "VIP Lounge Seating"],
-      image: "/memories/friends-selfie.jpg"
-    }
-  },
-
-  dateOptions: [
-    {
-      id: "date-dec-27",
-      dateNumber: 27,
-      month: "DEC",
-      year: 2026,
-      fullDateText: "Sunday, 27 December 2026",
-      dayOfWeek: "Sunday",
-      description: "Year-end holiday weekend — ideal for outstation classmates travelling to Karur.",
-      timeSlot: "10:00 AM - 4:00 PM"
-    },
-    {
-      id: "date-dec-25",
-      dateNumber: 25,
-      month: "DEC",
-      year: 2026,
-      fullDateText: "Friday, 25 December 2026",
-      dayOfWeek: "Friday (Christmas Holiday)",
-      description: "Christmas holiday — long weekend reunion celebration with classmates.",
-      timeSlot: "10:00 AM - 4:00 PM"
-    }
-  ] as DateOptionInfo[],
+  confirmedVenueName: "Habbi Mandi Karur",
+  confirmedVenueDescription: "Confirmed venue for our grand reunion feast & celebrations at Habbi Mandi, Karur",
 
   // Inquiries / Doubts Helpline Number
   contactPhone: "8838082883",

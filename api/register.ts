@@ -39,11 +39,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 2. Check current registration count atomically
+    // 2. Check current registration count atomically (head: true for fast count query)
     const { count, error: countError } = await supabase
       .from('registrations')
-      .select('id', { count: 'exact' })
-      .limit(1);
+      .select('id', { count: 'exact', head: true });
 
     if (countError) {
       console.error('Count query error:', countError);
@@ -98,6 +97,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (insertError) {
       console.error('Insert error:', insertError);
+      // Check if duplicate key violation or capacity trigger fired
+      if (insertError.code === '23505') {
+        return res.status(400).json({ 
+          error: 'A registration with this mobile number already exists! Please contact the organizer if you need to update.' 
+        });
+      }
+      if (insertError.message?.includes('REGISTRATION LIMIT REACHED')) {
+        return res.status(400).json({ 
+          error: `ALL REGISTRATION SLOTS ARE FILLED! Maximum capacity of ${MAX_CAPACITY} students has been reached.` 
+        });
+      }
       return res.status(500).json({ error: 'Failed to record registration in database.', details: insertError.message });
     }
 

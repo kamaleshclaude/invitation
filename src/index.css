@@ -346,6 +346,14 @@ body {
   backface-visibility: hidden;
 }
 
+/* Mobile Performance Optimizations */
+@media (max-width: 640px) {
+  .clay-card, .liquid-glass-card, .clay-panel, .liquid-glass-panel {
+    backdrop-filter: blur(12px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+  }
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
